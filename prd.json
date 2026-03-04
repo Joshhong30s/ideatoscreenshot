@@ -8,7 +8,7 @@
       "title": "S1: 專案架構與 CLI 骨架",
       "description": "建立專案結構：\n- pyproject.toml（Python 3.11+, dependencies: click, playwright, httpx, jinja2）\n- design_scout/ package 結構\n- CLI 入口 (design_scout/cli.py)\n- CLI 參數：keyword (必填), --count (預設 5), --output (預設 ./output)\n- 基本 --help 和 --version\n\n檔案結構：\ndesign-scout/\n├── pyproject.toml\n├── README.md\n├── design_scout/\n│   ├── __init__.py\n│   ├── cli.py\n│   ├── search/\n│   │   └── __init__.py\n│   ├── screenshot/\n│   │   └── __init__.py\n│   ├── scoring/\n│   │   └── __init__.py\n│   └── report/\n│       └── __init__.py\n└── tests/\n    └── __init__.py",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -m design_scout.cli --help",
       "targetFiles": [
         "pyproject.toml",
