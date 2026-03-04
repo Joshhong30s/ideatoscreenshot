@@ -44,7 +44,7 @@
       "title": "S4: AI 評分系統",
       "description": "實作 Vision API 評分：\n1. design_scout/scoring/prompts.py - 評分 Prompt 模板\n2. design_scout/scoring/evaluator.py - 評分邏輯\n\n評分標準 Prompt：\n- 視覺吸引力 (0-25)\n- 佈局清晰度 (0-25)  \n- 現代感 (0-25)\n- 專業度 (0-25)\n- 總分 0-100 + 一句評語\n\n功能：\n- evaluate(screenshot_path) -> {score: int, comment: str, breakdown: dict}\n- 支援批量評分\n- 使用環境變數 OPENAI_API_KEY 或 ANTHROPIC_API_KEY\n\nCLI 整合：評分結果顯示在輸出中",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.scoring.prompts import SCORING_PROMPT; print(SCORING_PROMPT[:100]); assert 'score' in SCORING_PROMPT.lower()\"",
       "targetFiles": [
         "prompts.py",
