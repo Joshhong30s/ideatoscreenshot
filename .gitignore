@@ -1,0 +1,6 @@
+
+# Demo/test output
+demo-output/
+output/
+*.png
+*.jpg
