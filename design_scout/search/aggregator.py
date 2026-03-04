@@ -8,6 +8,7 @@ from .google import search_google
 from .awwwards import search_awwwards
 from .dribbble import search_dribbble
 from .siteinspire import search_siteinspire
+from .behance import search_behance
 
 
 # Target: 30-40 unique URLs from all sources
@@ -58,12 +59,17 @@ async def search_async(keyword: str, count: int = TARGET_URLS) -> List[str]:
     siteinspire_results = await search_siteinspire(keyword, URLS_PER_SOURCE)
     print(f"   → SiteInspire: {len(siteinspire_results)} URLs")
     
+    print(f"   Searching Behance...")
+    behance_results = await search_behance(keyword, URLS_PER_SOURCE)
+    print(f"   → Behance: {len(behance_results)} URLs")
+    
     # Combine all results
     all_urls = []
     all_urls.extend(google_results)
     all_urls.extend(awwwards_results)
     all_urls.extend(dribbble_results)
     all_urls.extend(siteinspire_results)
+    all_urls.extend(behance_results)
     
     print(f"   Total before dedup: {len(all_urls)}")
     
