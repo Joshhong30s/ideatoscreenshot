@@ -20,7 +20,7 @@
       "title": "S2: 搜尋引擎整合",
       "description": "實作多來源搜尋：\n1. design_scout/search/google.py - Google 搜尋（用 httpx + 解析結果）\n2. design_scout/search/awwwards.py - Awwwards 爬蟲\n3. design_scout/search/aggregator.py - 整合多來源 + URL 標準化 + 去重\n\n功能：\n- search(keyword, count) -> List[str] 回傳 URL 列表\n- URL 標準化（移除 query params, 統一 protocol）\n- 去重（相同 domain 只保留一個）\n- 處理搜尋失敗（graceful fallback）\n\nCLI 整合：執行 `design-scout \"fintech dashboard\"` 應該印出找到的 URL 列表",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.aggregator import search; urls = search('test', 3); print(f'Found {len(urls)} URLs'); assert len(urls) > 0\"",
       "targetFiles": [
         "google.py",
