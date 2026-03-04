@@ -56,7 +56,7 @@
       "title": "S5: 報告生成",
       "description": "實作報告輸出：\n1. design_scout/report/templates/report.html - Jinja2 HTML 模板\n2. design_scout/report/generator.py - 報告生成邏輯\n\nHTML 報告內容：\n- 標題（搜尋關鍵字）\n- Top 5 設計卡片（截圖 + 分數 + 評語 + URL）\n- 按分數排序\n- 響應式設計（桌面/手機都能看）\n\nJSON 輸出：\n- results.json 包含所有資料\n\n功能：\n- generate_html(results, output_path)\n- generate_json(results, output_path)\n\nCLI 整合：完整流程 keyword -> search -> screenshot -> score -> report",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.report.generator import generate_html; print('generator imported')\"",
       "targetFiles": [
         "generator.py",
