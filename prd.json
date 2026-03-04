@@ -68,7 +68,7 @@
       "title": "S6: 優化與完善",
       "description": "最終優化：\n1. 快取機制 - 避免重複截圖相同 URL\n2. 進度顯示 - rich 或 tqdm 進度條\n3. 錯誤重試 - 截圖失敗重試 2 次\n4. README.md - 完整使用說明\n5. 範例輸出 - examples/ 目錄\n\nREADME 內容：\n- 安裝說明\n- 使用範例\n- 配置說明（API keys）\n- 輸出範例\n\nCLI 完善：\n- 彩色輸出\n- 進度顯示\n- 錯誤訊息友善",
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && test -f README.md && grep -q \"install\" README.md && echo \"README OK\"",
       "targetFiles": [
         "README.md"

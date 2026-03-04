@@ -7,7 +7,7 @@ from pathlib import Path
 import click
 
 from design_scout import __version__
-from design_scout.search.aggregator import search
+from design_scout.search.aggregator import search_async
 from design_scout.screenshot.capture import capture_batch, BrowserManager
 from design_scout.screenshot.browser import BrowserManager
 from design_scout.scoring.evaluator import evaluate
@@ -50,7 +50,7 @@ async def run_scout(keyword: str, count: int, output: str, no_score: bool) -> No
     
     # Step 1: Search
     print_progress(f"Searching for '{keyword}'...", "🔍")
-    urls = search(keyword, count * 2)  # Get extra for failures
+    urls = await search_async(keyword, count * 2)  # Get extra for failures
     
     if not urls:
         click.echo(click.style("No URLs found. Try different keywords.", fg="yellow"))

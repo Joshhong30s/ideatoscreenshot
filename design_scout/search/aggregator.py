@@ -9,7 +9,7 @@ from .awwwards import search_awwwards
 
 
 def search(keyword: str, count: int = 10) -> List[str]:
-    """Synchronous wrapper for async search.
+    """Synchronous wrapper for async search (for non-async callers).
     
     Combines results from multiple sources, deduplicates, and normalizes URLs.
     """
