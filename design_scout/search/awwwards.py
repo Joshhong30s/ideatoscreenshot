@@ -59,13 +59,21 @@ def is_valid_design_url(url: str) -> bool:
         'facebook.com',
         'twitter.com',
         'linkedin.com',
+        'instagram.com',
+        'youtube.com',
+        'pinterest.com',
+        'behance.net',
+        'dribbble.com',
         'google.com',
+        'apple.com',
         'cdn.',
         'assets.',
         '.js',
         '.css',
         '.png',
         '.jpg',
+        '.gif',
+        '.svg',
     ]
     
     url_lower = url.lower()
