@@ -1,0 +1,82 @@
+{
+  "version": "1.0",
+  "projectName": "design-scout",
+  "description": "全自動設計靈感搜集工具 — 輸入關鍵字，輸出 Top 5 設計截圖 + AI 評分",
+  "stories": [
+    {
+      "id": "story-mmc5neat",
+      "title": "S1: 專案架構與 CLI 骨架",
+      "description": "建立專案結構：\n- pyproject.toml（Python 3.11+, dependencies: click, playwright, httpx, jinja2）\n- design_scout/ package 結構\n- CLI 入口 (design_scout/cli.py)\n- CLI 參數：keyword (必填), --count (預設 5), --output (預設 ./output)\n- 基本 --help 和 --version\n\n檔案結構：\ndesign-scout/\n├── pyproject.toml\n├── README.md\n├── design_scout/\n│   ├── __init__.py\n│   ├── cli.py\n│   ├── search/\n│   │   └── __init__.py\n│   ├── screenshot/\n│   │   └── __init__.py\n│   ├── scoring/\n│   │   └── __init__.py\n│   └── report/\n│       └── __init__.py\n└── tests/\n    └── __init__.py",
+      "priority": 1,
+      "passes": false,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -m design_scout.cli --help",
+      "targetFiles": [
+        "pyproject.toml",
+        "cli.py"
+      ]
+    },
+    {
+      "id": "story-mmc5neax",
+      "title": "S2: 搜尋引擎整合",
+      "description": "實作多來源搜尋：\n1. design_scout/search/google.py - Google 搜尋（用 httpx + 解析結果）\n2. design_scout/search/awwwards.py - Awwwards 爬蟲\n3. design_scout/search/aggregator.py - 整合多來源 + URL 標準化 + 去重\n\n功能：\n- search(keyword, count) -> List[str] 回傳 URL 列表\n- URL 標準化（移除 query params, 統一 protocol）\n- 去重（相同 domain 只保留一個）\n- 處理搜尋失敗（graceful fallback）\n\nCLI 整合：執行 `design-scout \"fintech dashboard\"` 應該印出找到的 URL 列表",
+      "priority": 2,
+      "passes": false,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.aggregator import search; urls = search('test', 3); print(f'Found {len(urls)} URLs'); assert len(urls) > 0\"",
+      "targetFiles": [
+        "google.py",
+        "aggregator.py"
+      ]
+    },
+    {
+      "id": "story-mmc5neb2",
+      "title": "S3: 批量截圖引擎",
+      "description": "實作 Playwright 截圖：\n1. design_scout/screenshot/browser.py - Browser 管理（啟動/關閉）\n2. design_scout/screenshot/capture.py - 截圖邏輯\n\n功能：\n- capture(url, output_dir) -> dict 回傳 {desktop: path, mobile: path}\n- Desktop: 1440x900\n- Mobile: 390x844\n- Timeout 處理（預設 30s）\n- 錯誤處理（載入失敗回傳 None）\n- 支援並行截圖（asyncio）\n\nCLI 整合：加入 --screenshot-only 模式測試截圖功能",
+      "priority": 3,
+      "passes": false,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"import asyncio; from design_scout.screenshot.capture import capture; result = asyncio.run(capture('https://example.com', '/tmp')); print(result); assert result is not None\"",
+      "targetFiles": [
+        "browser.py",
+        "capture.py"
+      ]
+    },
+    {
+      "id": "story-mmc5nr5h",
+      "title": "S4: AI 評分系統",
+      "description": "實作 Vision API 評分：\n1. design_scout/scoring/prompts.py - 評分 Prompt 模板\n2. design_scout/scoring/evaluator.py - 評分邏輯\n\n評分標準 Prompt：\n- 視覺吸引力 (0-25)\n- 佈局清晰度 (0-25)  \n- 現代感 (0-25)\n- 專業度 (0-25)\n- 總分 0-100 + 一句評語\n\n功能：\n- evaluate(screenshot_path) -> {score: int, comment: str, breakdown: dict}\n- 支援批量評分\n- 使用環境變數 OPENAI_API_KEY 或 ANTHROPIC_API_KEY\n\nCLI 整合：評分結果顯示在輸出中",
+      "priority": 4,
+      "passes": false,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.scoring.prompts import SCORING_PROMPT; print(SCORING_PROMPT[:100]); assert 'score' in SCORING_PROMPT.lower()\"",
+      "targetFiles": [
+        "prompts.py",
+        "evaluator.py"
+      ]
+    },
+    {
+      "id": "story-mmc5nr5m",
+      "title": "S5: 報告生成",
+      "description": "實作報告輸出：\n1. design_scout/report/templates/report.html - Jinja2 HTML 模板\n2. design_scout/report/generator.py - 報告生成邏輯\n\nHTML 報告內容：\n- 標題（搜尋關鍵字）\n- Top 5 設計卡片（截圖 + 分數 + 評語 + URL）\n- 按分數排序\n- 響應式設計（桌面/手機都能看）\n\nJSON 輸出：\n- results.json 包含所有資料\n\n功能：\n- generate_html(results, output_path)\n- generate_json(results, output_path)\n\nCLI 整合：完整流程 keyword -> search -> screenshot -> score -> report",
+      "priority": 5,
+      "passes": false,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.report.generator import generate_html; print('generator imported')\"",
+      "targetFiles": [
+        "generator.py",
+        "report.html"
+      ]
+    },
+    {
+      "id": "story-mmc5nr5s",
+      "title": "S6: 優化與完善",
+      "description": "最終優化：\n1. 快取機制 - 避免重複截圖相同 URL\n2. 進度顯示 - rich 或 tqdm 進度條\n3. 錯誤重試 - 截圖失敗重試 2 次\n4. README.md - 完整使用說明\n5. 範例輸出 - examples/ 目錄\n\nREADME 內容：\n- 安裝說明\n- 使用範例\n- 配置說明（API keys）\n- 輸出範例\n\nCLI 完善：\n- 彩色輸出\n- 進度顯示\n- 錯誤訊息友善",
+      "priority": 6,
+      "passes": false,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && test -f README.md && grep -q \"install\" README.md && echo \"README OK\"",
+      "targetFiles": [
+        "README.md"
+      ]
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-03-04T14:51:27.845Z",
+    "totalIterations": 0
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "stories": [
+    {
+      "id": "story-mmc5neat",
+      "title": "S1: 專案架構與 CLI 骨架",
+      "status": "failed",
+      "filesModified": [],
+      "learnings": "[unknown] /Applications/Xcode.app/Contents/Developer/usr/bin/python3: Error while finding module specification for 'design_scout.cli' (ModuleNotFoundError: No module named 'design_scout')"
+    }
+  ],
+  "failures": [
+    {
+      "storyId": "story-mmc5neat",
+      "storyTitle": "S1: 專案架構與 CLI 骨架",
+      "category": "unknown",
+      "error": "/bin/sh: python: command not found",
+      "toolNames": [],
+      "iterationNumber": 1
+    },
+    {
+      "storyId": "story-mmc5neat",
+      "storyTitle": "S1: 專案架構與 CLI 骨架",
+      "category": "unknown",
+      "error": "/bin/sh: python: command not found",
+      "toolNames": [],
+      "iterationNumber": 2
+    },
+    {
+      "storyId": "story-mmc5neat",
+      "storyTitle": "S1: 專案架構與 CLI 骨架",
+      "category": "unknown",
+      "error": "/bin/sh: python: command not found",
+      "toolNames": [],
+      "iterationNumber": 3
+    },
+    {
+      "storyId": "story-mmc5neat",
+      "storyTitle": "S1: 專案架構與 CLI 骨架",
+      "category": "unknown",
+      "error": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3: Error while finding module specification for 'design_scout.cli' (ModuleNotFoundError: No module named 'design_scout')",
+      "toolNames": [],
+      "iterationNumber": 1
+    },
+    {
+      "storyId": "story-mmc5neat",
+      "storyTitle": "S1: 專案架構與 CLI 骨架",
+      "category": "unknown",
+      "error": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3: Error while finding module specification for 'design_scout.cli' (ModuleNotFoundError: No module named 'design_scout')",
+      "toolNames": [],
+      "iterationNumber": 1
+    },
+    {
+      "storyId": "story-mmc5neat",
+      "storyTitle": "S1: 專案架構與 CLI 骨架",
+      "category": "unknown",
+      "error": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3: Error while finding module specification for 'design_scout.cli' (ModuleNotFoundError: No module named 'design_scout')",
+      "toolNames": [],
+      "iterationNumber": 1
+    }
+  ]
+}
