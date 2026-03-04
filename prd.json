@@ -32,7 +32,7 @@
       "title": "S3: 批量截圖引擎",
       "description": "實作 Playwright 截圖：\n1. design_scout/screenshot/browser.py - Browser 管理（啟動/關閉）\n2. design_scout/screenshot/capture.py - 截圖邏輯\n\n功能：\n- capture(url, output_dir) -> dict 回傳 {desktop: path, mobile: path}\n- Desktop: 1440x900\n- Mobile: 390x844\n- Timeout 處理（預設 30s）\n- 錯誤處理（載入失敗回傳 None）\n- 支援並行截圖（asyncio）\n\nCLI 整合：加入 --screenshot-only 模式測試截圖功能",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"import asyncio; from design_scout.screenshot.capture import capture; result = asyncio.run(capture('https://example.com', '/tmp')); print(result); assert result is not None\"",
       "targetFiles": [
         "browser.py",
