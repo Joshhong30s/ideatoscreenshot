@@ -1,78 +1,67 @@
-"""Dribbble search integration"""
+"""Dribbble search using Playwright"""
 
-import httpx
 from typing import List
-import re
+from urllib.parse import urlparse
+
+from ..screenshot.browser import BrowserManager
 
 
 async def search_dribbble(keyword: str, count: int = 15) -> List[str]:
-    """Search Dribbble for design shots.
+    """Search Dribbble using Playwright browser.
     
-    Dribbble is a community for showcasing design work.
-    We extract links to actual websites from shot descriptions.
+    Dribbble shows design shots - we extract external website links.
     """
     encoded_keyword = keyword.replace(" ", "+")
     url = f"https://dribbble.com/search/{encoded_keyword}"
     
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    }
+    context = None
+    page = None
     
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, headers=headers, timeout=15.0, follow_redirects=True)
-            response.raise_for_status()
-            
-            urls = extract_dribbble_urls(response.text)
-            return urls[:count]
-        except Exception as e:
-            print(f"Dribbble search error: {e}")
-            return []
-
-
-def extract_dribbble_urls(html: str) -> List[str]:
-    """Extract website URLs from Dribbble HTML."""
-    urls = []
-    
-    # Look for external links in shot cards
-    patterns = [
-        r'href="(https?://(?!dribbble\.com)[^"]+)"',
-        r'data-url="(https?://[^"]+)"',
-    ]
-    
-    for pattern in patterns:
-        matches = re.findall(pattern, html)
-        for match in matches:
-            if is_valid_design_url(match):
-                if match not in urls:
-                    urls.append(match)
-    
-    return urls
-
-
-def is_valid_design_url(url: str) -> bool:
-    """Check if URL is likely a design portfolio/website."""
-    excluded = [
-        'dribbble.com',
-        'facebook.com',
-        'twitter.com',
-        'linkedin.com',
-        'instagram.com',
-        'google.com',
-        'youtube.com',
-        'cdn.',
-        'assets.',
-        '.js',
-        '.css',
-        '.png',
-        '.jpg',
-        '.gif',
-    ]
-    
-    url_lower = url.lower()
-    for exc in excluded:
-        if exc in url_lower:
-            return False
-    
-    return url.startswith('http')
+    try:
+        context = await BrowserManager.new_context({'width': 1280, 'height': 900})
+        page = await context.new_page()
+        
+        await page.goto(url, wait_until='domcontentloaded', timeout=15000)
+        
+        # Wait for shots to load
+        await page.wait_for_selector('.shot-thumbnail', timeout=5000)
+        
+        # Get all external links from shot cards
+        links = await page.eval_on_selector_all(
+            'a[href^="http"]',
+            '''elements => elements
+                .map(el => el.href)
+                .filter(href => 
+                    href &&
+                    !href.includes('dribbble.com') &&
+                    !href.includes('facebook.com') &&
+                    !href.includes('twitter.com') &&
+                    !href.includes('google.com') &&
+                    !href.includes('cdn.') &&
+                    !href.endsWith('.png') &&
+                    !href.endsWith('.jpg')
+                )'''
+        )
+        
+        # Dedupe by domain
+        seen = set()
+        unique_urls = []
+        for link in links:
+            domain = urlparse(link).netloc
+            if domain not in seen:
+                seen.add(domain)
+                unique_urls.append(link)
+                if len(unique_urls) >= count:
+                    break
+        
+        return unique_urls
+        
+    except Exception as e:
+        print(f"Dribbble search error: {e}")
+        return []
+        
+    finally:
+        if page:
+            await page.close()
+        if context:
+            await context.close()

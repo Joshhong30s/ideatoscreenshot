@@ -1,75 +1,76 @@
-"""SiteInspire search integration"""
+"""SiteInspire search using Playwright"""
 
-import httpx
 from typing import List
-import re
+from urllib.parse import urlparse
+
+from ..screenshot.browser import BrowserManager
 
 
 async def search_siteinspire(keyword: str, count: int = 15) -> List[str]:
-    """Search SiteInspire for curated web designs.
+    """Search SiteInspire using Playwright browser.
     
-    SiteInspire is a showcase of the finest web and interactive design.
+    SiteInspire is a curated showcase of the finest web design.
     """
     encoded_keyword = keyword.replace(" ", "+")
     url = f"https://www.siteinspire.com/websites?search={encoded_keyword}"
     
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    }
+    context = None
+    page = None
     
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, headers=headers, timeout=15.0, follow_redirects=True)
-            response.raise_for_status()
-            
-            urls = extract_siteinspire_urls(response.text)
-            return urls[:count]
-        except Exception as e:
-            print(f"SiteInspire search error: {e}")
-            return []
-
-
-def extract_siteinspire_urls(html: str) -> List[str]:
-    """Extract website URLs from SiteInspire HTML."""
-    urls = []
-    
-    # SiteInspire lists actual website URLs
-    patterns = [
-        r'href="(https?://(?!www\.siteinspire\.com)[^"]+)"',
-        r'data-href="(https?://[^"]+)"',
-        r'class="website-link"[^>]*href="(https?://[^"]+)"',
-    ]
-    
-    for pattern in patterns:
-        matches = re.findall(pattern, html)
-        for match in matches:
-            if is_valid_design_url(match):
-                if match not in urls:
-                    urls.append(match)
-    
-    return urls
-
-
-def is_valid_design_url(url: str) -> bool:
-    """Check if URL is likely a real website."""
-    excluded = [
-        'siteinspire.com',
-        'facebook.com',
-        'twitter.com',
-        'linkedin.com',
-        'instagram.com',
-        'google.com',
-        'youtube.com',
-        'cdn.',
-        'assets.',
-        '.js',
-        '.css',
-    ]
-    
-    url_lower = url.lower()
-    for exc in excluded:
-        if exc in url_lower:
-            return False
-    
-    return url.startswith('http')
+    try:
+        context = await BrowserManager.new_context({'width': 1280, 'height': 900})
+        page = await context.new_page()
+        
+        await page.goto(url, wait_until='domcontentloaded', timeout=15000)
+        
+        # Wait for page to load
+        import asyncio
+        await asyncio.sleep(2)
+        
+        # Get external website links
+        links = await page.eval_on_selector_all(
+            'a.website-link[href^="http"], a[data-url^="http"]',
+            '''elements => elements
+                .map(el => el.href || el.dataset.url)
+                .filter(href => 
+                    href &&
+                    !href.includes('siteinspire.com')
+                )'''
+        )
+        
+        # If no links found with specific selectors, try broader search
+        if not links:
+            links = await page.eval_on_selector_all(
+                '.website a[href^="http"]',
+                '''elements => elements
+                    .map(el => el.href)
+                    .filter(href => 
+                        href &&
+                        !href.includes('siteinspire.com') &&
+                        !href.includes('facebook.com') &&
+                        !href.includes('twitter.com')
+                    )'''
+            )
+        
+        # Dedupe by domain
+        seen = set()
+        unique_urls = []
+        for link in links:
+            domain = urlparse(link).netloc
+            if domain not in seen:
+                seen.add(domain)
+                unique_urls.append(link)
+                if len(unique_urls) >= count:
+                    break
+        
+        return unique_urls
+        
+    except Exception as e:
+        print(f"SiteInspire search error: {e}")
+        return []
+        
+    finally:
+        if page:
+            await page.close()
+        if context:
+            await context.close()
