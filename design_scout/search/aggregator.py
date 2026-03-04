@@ -1,4 +1,4 @@
-"""Search aggregator - combines multiple sources"""
+"""Search aggregator - combines multiple sources to get 30-40 URLs"""
 
 import asyncio
 from typing import List
@@ -6,44 +6,71 @@ from urllib.parse import urlparse
 
 from .google import search_google
 from .awwwards import search_awwwards
+from .dribbble import search_dribbble
+from .siteinspire import search_siteinspire
 
 
-def search(keyword: str, count: int = 10) -> List[str]:
+# Target: 30-40 unique URLs from all sources
+TARGET_URLS = 40
+URLS_PER_SOURCE = 15  # Request 15 from each source to get ~40 after dedup
+
+
+def search(keyword: str, count: int = TARGET_URLS) -> List[str]:
     """Synchronous wrapper for async search (for non-async callers).
     
     Combines results from multiple sources, deduplicates, and normalizes URLs.
+    Returns 30-40 unique URLs for comprehensive coverage.
     """
     return asyncio.run(search_async(keyword, count))
 
 
-async def search_async(keyword: str, count: int = 10) -> List[str]:
+async def search_async(keyword: str, count: int = TARGET_URLS) -> List[str]:
     """Search multiple sources for design inspiration.
+    
+    Sources:
+    - Google Search (~15 URLs)
+    - Awwwards (~15 URLs)
+    - Dribbble (~15 URLs)
+    - SiteInspire (~15 URLs)
+    
+    After deduplication, returns 30-40 unique URLs.
     
     Args:
         keyword: Search term (e.g., "fintech dashboard")
-        count: Number of results to return
+        count: Target number of URLs (default: 40)
         
     Returns:
-        List of unique, normalized URLs
+        List of unique, normalized URLs (30-40)
     """
-    # Request more than needed to account for duplicates
-    request_count = count * 2
+    print(f"   Searching Google...")
+    google_results = await search_google(keyword, URLS_PER_SOURCE)
+    print(f"   → Google: {len(google_results)} URLs")
     
-    # Search all sources in parallel
-    results = await asyncio.gather(
-        search_google(keyword, request_count),
-        search_awwwards(keyword, request_count),
-        return_exceptions=True
-    )
+    print(f"   Searching Awwwards...")
+    awwwards_results = await search_awwwards(keyword, URLS_PER_SOURCE)
+    print(f"   → Awwwards: {len(awwwards_results)} URLs")
     
+    print(f"   Searching Dribbble...")
+    dribbble_results = await search_dribbble(keyword, URLS_PER_SOURCE)
+    print(f"   → Dribbble: {len(dribbble_results)} URLs")
+    
+    print(f"   Searching SiteInspire...")
+    siteinspire_results = await search_siteinspire(keyword, URLS_PER_SOURCE)
+    print(f"   → SiteInspire: {len(siteinspire_results)} URLs")
+    
+    # Combine all results
     all_urls = []
-    for result in results:
-        if isinstance(result, list):
-            all_urls.extend(result)
-        # Silently ignore exceptions from individual sources
+    all_urls.extend(google_results)
+    all_urls.extend(awwwards_results)
+    all_urls.extend(dribbble_results)
+    all_urls.extend(siteinspire_results)
+    
+    print(f"   Total before dedup: {len(all_urls)}")
     
     # Normalize and deduplicate
     unique_urls = deduplicate_urls(all_urls)
+    
+    print(f"   After dedup: {len(unique_urls)} unique URLs")
     
     return unique_urls[:count]
 
