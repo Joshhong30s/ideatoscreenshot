@@ -36,6 +36,7 @@ async def search_dribbble(keyword: str, count: int = 15) -> List[str]:
                     !href.includes('dribbble.com') &&
                     !href.includes('facebook.com') &&
                     !href.includes('twitter.com') &&
+                    !href.includes('x.com') &&
                     !href.includes('google.com') &&
                     !href.includes('cdn.') &&
                     !href.endsWith('.png') &&

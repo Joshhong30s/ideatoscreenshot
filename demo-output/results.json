@@ -1,7 +1,7 @@
 {
   "keyword": "fintech dashboard",
-  "generated_at": "2026-03-04T23:33:58.146914",
-  "total_results": 15,
+  "generated_at": "2026-03-04T23:36:49.259067",
+  "total_results": 18,
   "results": [
     {
       "url": "https://gsproductions.co.za",
@@ -34,20 +34,20 @@
       "breakdown": null
     },
     {
-      "url": "https://animaapp.com",
+      "url": "https://srg.ava-digital.site/en",
       "screenshots": {
-        "desktop": "demo-output/screenshots/animaapp_com_desktop.png",
-        "mobile": "demo-output/screenshots/animaapp_com_mobile.png"
+        "desktop": "demo-output/screenshots/srg_ava-digital_site_en_desktop.png",
+        "mobile": "demo-output/screenshots/srg_ava-digital_site_en_mobile.png"
       },
       "score": 0,
       "comment": "",
       "breakdown": null
     },
     {
-      "url": "https://srg.ava-digital.site/en",
+      "url": "https://go.streamlinehq.com/awwwards-honors",
       "screenshots": {
-        "desktop": "demo-output/screenshots/srg_ava-digital_site_en_desktop.png",
-        "mobile": "demo-output/screenshots/srg_ava-digital_site_en_mobile.png"
+        "desktop": "demo-output/screenshots/go_streamlinehq_com_awwwards-honors_desktop.png",
+        "mobile": "demo-output/screenshots/go_streamlinehq_com_awwwards-honors_mobile.png"
       },
       "score": 0,
       "comment": "",
@@ -144,10 +144,40 @@
       "breakdown": null
     },
     {
-      "url": "https://farmminerals.com/promo",
+      "url": "https://instagram.com/dribbble",
       "screenshots": {
-        "desktop": "demo-output/screenshots/farmminerals_com_promo_desktop.png",
-        "mobile": "demo-output/screenshots/farmminerals_com_promo_mobile.png"
+        "desktop": "demo-output/screenshots/instagram_com_dribbble_desktop.png",
+        "mobile": "demo-output/screenshots/instagram_com_dribbble_mobile.png"
+      },
+      "score": 0,
+      "comment": "",
+      "breakdown": null
+    },
+    {
+      "url": "https://pinterest.com/dribbble",
+      "screenshots": {
+        "desktop": "demo-output/screenshots/pinterest_com_dribbble_desktop.png",
+        "mobile": "demo-output/screenshots/pinterest_com_dribbble_mobile.png"
+      },
+      "score": 0,
+      "comment": "",
+      "breakdown": null
+    },
+    {
+      "url": "https://youtube.com/dribbble",
+      "screenshots": {
+        "desktop": "demo-output/screenshots/youtube_com_dribbble_desktop.png",
+        "mobile": "demo-output/screenshots/youtube_com_dribbble_mobile.png"
+      },
+      "score": 0,
+      "comment": "",
+      "breakdown": null
+    },
+    {
+      "url": "https://threads.com/dribbble",
+      "screenshots": {
+        "desktop": "demo-output/screenshots/threads_com_dribbble_desktop.png",
+        "mobile": "demo-output/screenshots/threads_com_dribbble_mobile.png"
       },
       "score": 0,
       "comment": "",
