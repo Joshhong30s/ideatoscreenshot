@@ -1,24 +1,25 @@
-"""OnePageLove scraper - One-page website gallery"""
+"""Product Hunt scraper - Find trending products and their landing pages"""
 
 import httpx
 from typing import List
 import re
 
 
-async def search_onepagelove(keyword: str, count: int = 15) -> List[str]:
-    """Search OnePageLove for one-page website inspiration.
+async def search_producthunt(keyword: str, count: int = 15) -> List[str]:
+    """Search Product Hunt for product landing pages.
     
-    OnePageLove curates beautiful one-page websites and landing pages.
+    Product Hunt showcases new tech products with links to their websites.
+    Great for finding real, operating startup landing pages.
     
     Args:
-        keyword: Search term (e.g., "fintech", "portfolio")
+        keyword: Search term (e.g., "fintech", "saas")
         count: Max URLs to return
         
     Returns:
-        List of website URLs
+        List of website URLs (not producthunt.com links)
     """
     encoded_keyword = keyword.replace(" ", "+")
-    url = f"https://onepagelove.com/?s={encoded_keyword}"
+    url = f"https://www.producthunt.com/search?q={encoded_keyword}"
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -30,45 +31,46 @@ async def search_onepagelove(keyword: str, count: int = 15) -> List[str]:
             response = await client.get(url, headers=headers, timeout=15.0, follow_redirects=True)
             response.raise_for_status()
             
-            urls = extract_onepagelove_urls(response.text)
+            urls = extract_producthunt_urls(response.text)
             return urls[:count]
         except httpx.TimeoutException:
-            print(f"OnePageLove search timeout")
+            print(f"Product Hunt search timeout")
             return []
         except httpx.HTTPStatusError as e:
-            print(f"OnePageLove HTTP error: {e.response.status_code}")
+            print(f"Product Hunt HTTP error: {e.response.status_code}")
             return []
         except Exception as e:
-            print(f"OnePageLove search error: {e}")
+            print(f"Product Hunt search error: {e}")
             return []
 
 
-def extract_onepagelove_urls(html: str) -> List[str]:
-    """Extract website URLs from OnePageLove HTML."""
+def extract_producthunt_urls(html: str) -> List[str]:
+    """Extract external website URLs from Product Hunt HTML."""
     urls = []
     
-    # Look for external links to actual websites
-    # OnePageLove usually has "Visit Site" links
+    # Product Hunt links to actual product websites
+    # Look for external links that aren't producthunt.com
     patterns = [
-        r'href="(https?://(?!(?:www\.)?onepagelove\.com)[^"]+)"',
-        r'data-url="(https?://[^"]+)"',
-        r'data-site-url="(https?://[^"]+)"',
+        r'href="(https?://(?!(?:www\.)?producthunt\.com)[^"]+)"',
+        r'data-href="(https?://[^"]+)"',
+        r'"website":\s*"(https?://[^"]+)"',
+        r'"url":\s*"(https?://(?!(?:www\.)?producthunt\.com)[^"]+)"',
     ]
     
     for pattern in patterns:
         matches = re.findall(pattern, html)
         for match in matches:
-            if is_valid_landing_url(match):
+            if is_valid_product_url(match):
                 if match not in urls:
                     urls.append(match)
     
     return urls
 
 
-def is_valid_landing_url(url: str) -> bool:
-    """Check if URL is likely a real website."""
+def is_valid_product_url(url: str) -> bool:
+    """Check if URL is likely a real product website."""
     excluded = [
-        'onepagelove.com',
+        'producthunt.com',
         'facebook.com',
         'twitter.com',
         'linkedin.com',
@@ -91,7 +93,11 @@ def is_valid_landing_url(url: str) -> bool:
         'analytics',
         'tracking',
         'gravatar.com',
-        'wp-content',
+        'cloudflare',
+        'stripe.com',
+        'intercom.io',
+        'crisp.chat',
+        'hotjar.com',
     ]
     
     url_lower = url.lower()

@@ -1,14 +1,12 @@
-"""Search aggregator - combines multiple sources to get 30-40 URLs
+"""Search aggregator - combines multiple sources for competitor landing page research
 
 Sources (updated 2026-03-05):
-- DuckDuckGo (general web search)
-- Awwwards (award-winning sites)
-- SiteInspire (curated designs)
-- Lapa.ninja (landing pages)
-- Landingfolio (landing pages)
-- OnePageLove (one-page sites)
+- DuckDuckGo (25) - General web search, main source
+- Product Hunt (15) - Trending products & startups
+- Landingfolio (10) - Curated landing pages
+- Lapa.ninja (10) - Landing page gallery
 
-Removed: Dribbble, Behance (mockups, not real sites)
+Focus: Real operating websites for competitive research
 """
 
 import asyncio
@@ -16,79 +14,70 @@ from typing import List
 from urllib.parse import urlparse
 
 from .duckduckgo import search_duckduckgo
-from .awwwards import search_awwwards
-from .siteinspire import search_siteinspire
-from .lapa import search_lapa
+from .producthunt import search_producthunt
 from .landingfolio import search_landingfolio
-from .onepagelove import search_onepagelove
+from .lapa import search_lapa
 
 
-# Target: 30-40 unique URLs from all sources
-TARGET_URLS = 40
-URLS_PER_SOURCE = 10  # Request 10 from each source to get ~40 after dedup
+# Target: 40-60 unique URLs from all sources
+TARGET_URLS = 50
+
+# Source quotas
+DDG_COUNT = 25
+PH_COUNT = 15
+LF_COUNT = 10
+LAPA_COUNT = 10
 
 
 def search(keyword: str, count: int = TARGET_URLS) -> List[str]:
     """Synchronous wrapper for async search (for non-async callers).
     
     Combines results from multiple sources, deduplicates, and normalizes URLs.
-    Returns 30-40 unique URLs for comprehensive coverage.
+    Returns up to `count` unique URLs for competitive research.
     """
     return asyncio.run(search_async(keyword, count))
 
 
 async def search_async(keyword: str, count: int = TARGET_URLS) -> List[str]:
-    """Search multiple sources for design inspiration.
+    """Search multiple sources for competitor landing pages.
     
     Sources:
-    - DuckDuckGo (~10 URLs)
-    - Awwwards (~10 URLs)
-    - SiteInspire (~10 URLs)
-    - Lapa.ninja (~10 URLs)
-    - Landingfolio (~10 URLs)
-    - OnePageLove (~10 URLs)
+    - DuckDuckGo (~25 URLs) - Primary source
+    - Product Hunt (~15 URLs) - Trending products
+    - Landingfolio (~10 URLs) - Curated landing pages
+    - Lapa.ninja (~10 URLs) - Landing page gallery
     
-    After deduplication, returns 30-40 unique URLs.
+    After deduplication, returns 40-60 unique URLs.
     
     Args:
         keyword: Search term (e.g., "fintech dashboard")
-        count: Target number of URLs (default: 40)
+        count: Target number of URLs (default: 50)
         
     Returns:
-        List of unique, normalized URLs (30-40)
+        List of unique, normalized URLs
     """
     print(f"   Searching DuckDuckGo...")
-    ddg_results = await search_duckduckgo(keyword, URLS_PER_SOURCE)
+    ddg_results = await search_duckduckgo(keyword, DDG_COUNT)
     print(f"   → DuckDuckGo: {len(ddg_results)} URLs")
     
-    print(f"   Searching Awwwards...")
-    awwwards_results = await search_awwwards(keyword, URLS_PER_SOURCE)
-    print(f"   → Awwwards: {len(awwwards_results)} URLs")
-    
-    print(f"   Searching SiteInspire...")
-    siteinspire_results = await search_siteinspire(keyword, URLS_PER_SOURCE)
-    print(f"   → SiteInspire: {len(siteinspire_results)} URLs")
-    
-    print(f"   Searching Lapa.ninja...")
-    lapa_results = await search_lapa(keyword, URLS_PER_SOURCE)
-    print(f"   → Lapa.ninja: {len(lapa_results)} URLs")
+    print(f"   Searching Product Hunt...")
+    ph_results = await search_producthunt(keyword, PH_COUNT)
+    print(f"   → Product Hunt: {len(ph_results)} URLs")
     
     print(f"   Searching Landingfolio...")
-    landingfolio_results = await search_landingfolio(keyword, URLS_PER_SOURCE)
+    landingfolio_results = await search_landingfolio(keyword, LF_COUNT)
     print(f"   → Landingfolio: {len(landingfolio_results)} URLs")
     
-    print(f"   Searching OnePageLove...")
-    onepagelove_results = await search_onepagelove(keyword, URLS_PER_SOURCE)
-    print(f"   → OnePageLove: {len(onepagelove_results)} URLs")
+    print(f"   Searching Lapa.ninja...")
+    lapa_results = await search_lapa(keyword, LAPA_COUNT)
+    print(f"   → Lapa.ninja: {len(lapa_results)} URLs")
     
     # Combine all results
     all_urls = []
     all_urls.extend(ddg_results)
-    all_urls.extend(awwwards_results)
-    all_urls.extend(siteinspire_results)
-    all_urls.extend(lapa_results)
+    all_urls.extend(ph_results)
     all_urls.extend(landingfolio_results)
-    all_urls.extend(onepagelove_results)
+    all_urls.extend(lapa_results)
     
     print(f"   Total before dedup: {len(all_urls)}")
     

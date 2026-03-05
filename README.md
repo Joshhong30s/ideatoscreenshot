@@ -1,16 +1,14 @@
 # 🎨 Design Scout
 
-全自動設計靈感搜集工具 — 輸入關鍵字，輸出 Top 設計截圖 + AI 評分
+競品 Landing Page 研究工具 — 輸入關鍵字，輸出 Top 設計截圖 + AI 評分
 
 ## Features
 
-- **Multi-source Search**: 搜尋真實營運網站（非設計 mockup）
-  - DuckDuckGo 網頁搜尋
-  - Awwwards 得獎網站
-  - SiteInspire 精選設計
-  - Lapa.ninja Landing Pages
-  - Landingfolio Landing Pages
-  - OnePageLove 單頁網站
+- **Multi-source Search**: 聚焦競品 landing page 研究
+  - DuckDuckGo (25) — 主要搜尋來源
+  - Product Hunt (15) — 熱門產品與新創
+  - Landingfolio (10) — 精選 landing pages
+  - Lapa.ninja (10) — Landing page gallery
 - **Dual Screenshots**: Desktop (1440px) + Mobile (390px) with Retina support
 - **AI Scoring**: GPT-4o or Claude Vision rates designs 0-100
 - **Beautiful Reports**: HTML gallery + JSON data
@@ -63,24 +61,22 @@ Without an API key, scoring will use mock values.
 
 ## How It Works
 
-1. **搜尋**: 同時從 6 個來源搜尋關鍵字相關的網站
+1. **搜尋**: 從 4 個來源搜尋關鍵字相關的網站（共 60 URLs）
 2. **去重**: 移除重複 domain，標準化 URLs
 3. **截圖**: 用 Playwright 截取桌面版和手機版截圖
 4. **評分**: 用 AI Vision 模型評分（視覺、佈局、現代感、專業度）
 5. **報告**: 生成 HTML 報告和 JSON 資料
 
-### 為什麼這些來源？
+### 搜尋來源配置
 
-我們選擇展示**真實營運網站**的 gallery，而非設計 mockup 作品集：
+聚焦**競品 landing page 研究**，選擇高品質的真實網站來源：
 
-| 來源 | 類型 | 優點 |
+| 來源 | 數量 | 說明 |
 |------|------|------|
-| **Awwwards** | 得獎網站 | 最高品質，真實上線網站 |
-| **SiteInspire** | 精選設計 | 人工策展，品質穩定 |
-| **Lapa.ninja** | Landing Pages | 專注 landing page，分類清楚 |
-| **Landingfolio** | Landing Pages | 按行業分類，參考價值高 |
-| **OnePageLove** | 單頁網站 | 單頁設計專家 |
-| **DuckDuckGo** | 通用搜尋 | 補充長尾結果 |
+| **DuckDuckGo** | 25 | 主要搜尋引擎，廣泛覆蓋 |
+| **Product Hunt** | 15 | 熱門新創產品，趨勢指標 |
+| **Landingfolio** | 10 | 按行業分類的 landing pages |
+| **Lapa.ninja** | 10 | 精選 landing page gallery |
 
 ## Output
 
@@ -105,7 +101,7 @@ output/
 ```json
 {
   "keyword": "fintech dashboard",
-  "generated_at": "2026-03-05T10:00:00",
+  "generated_at": "2026-03-05T12:00:00",
   "total_results": 5,
   "results": [
     {
@@ -160,10 +156,15 @@ black design_scout/
 
 ## Changelog
 
-### 2026-03-05
-- ✨ 新增 Lapa.ninja, Landingfolio, OnePageLove 來源
-- ✨ 新增 DuckDuckGo 搜尋（取代 Google）
-- 🗑️ 移除 mockup 作品集來源，改用真實營運網站
+### 2026-03-05 (v2)
+- 🎯 聚焦競品 landing page 研究
+- ✨ 新增 Product Hunt 來源
+- ⬆️ DuckDuckGo 提權至 25 URLs
+- 🗑️ 移除 Awwwards, SiteInspire, OnePageLove
+
+### 2026-03-05 (v1)
+- ✨ 新增 Lapa.ninja, Landingfolio, OnePageLove
+- ✨ 新增 DuckDuckGo 搜尋
 
 ### 2026-03-04
 - 🎉 Initial release
