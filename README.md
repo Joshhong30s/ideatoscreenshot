@@ -71,7 +71,7 @@ Without an API key, scoring will use mock values.
 
 ### 為什麼這些來源？
 
-我們選擇展示**真實營運網站**的 gallery，而非設計作品集（如 Dribbble/Behance）：
+我們選擇展示**真實營運網站**的 gallery，而非設計 mockup 作品集：
 
 | 來源 | 類型 | 優點 |
 |------|------|------|
@@ -163,7 +163,7 @@ black design_scout/
 ### 2026-03-05
 - ✨ 新增 Lapa.ninja, Landingfolio, OnePageLove 來源
 - ✨ 新增 DuckDuckGo 搜尋（取代 Google）
-- 🗑️ 移除 Dribbble, Behance（mockup 為主，非真實網站）
+- 🗑️ 移除 mockup 作品集來源，改用真實營運網站
 
 ### 2026-03-04
 - 🎉 Initial release

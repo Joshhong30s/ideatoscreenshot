@@ -1,12 +1,12 @@
 {
   "version": "1.0",
   "projectName": "design-scout",
-  "description": "全自動設計靈感搜集工具 — 輸入關鍵字，輸出 Top 5 設計截圖 + AI 評分",
+  "description": "\u5168\u81ea\u52d5\u8a2d\u8a08\u9748\u611f\u641c\u96c6\u5de5\u5177 \u2014 \u8f38\u5165\u95dc\u9375\u5b57\uff0c\u8f38\u51fa Top 5 \u8a2d\u8a08\u622a\u5716 + AI \u8a55\u5206",
   "stories": [
     {
       "id": "story-mmc5neat",
-      "title": "S1: 專案架構與 CLI 骨架",
-      "description": "建立專案結構：\n- pyproject.toml（Python 3.11+, dependencies: click, playwright, httpx, jinja2）\n- design_scout/ package 結構\n- CLI 入口 (design_scout/cli.py)\n- CLI 參數：keyword (必填), --count (預設 5), --output (預設 ./output)\n- 基本 --help 和 --version\n\n檔案結構：\ndesign-scout/\n├── pyproject.toml\n├── README.md\n├── design_scout/\n│   ├── __init__.py\n│   ├── cli.py\n│   ├── search/\n│   │   └── __init__.py\n│   ├── screenshot/\n│   │   └── __init__.py\n│   ├── scoring/\n│   │   └── __init__.py\n│   └── report/\n│       └── __init__.py\n└── tests/\n    └── __init__.py",
+      "title": "S1: \u5c08\u6848\u67b6\u69cb\u8207 CLI \u9aa8\u67b6",
+      "description": "\u5efa\u7acb\u5c08\u6848\u7d50\u69cb\uff1a\n- pyproject.toml\uff08Python 3.11+, dependencies: click, playwright, httpx, jinja2\uff09\n- design_scout/ package \u7d50\u69cb\n- CLI \u5165\u53e3 (design_scout/cli.py)\n- CLI \u53c3\u6578\uff1akeyword (\u5fc5\u586b), --count (\u9810\u8a2d 5), --output (\u9810\u8a2d ./output)\n- \u57fa\u672c --help \u548c --version\n\n\u6a94\u6848\u7d50\u69cb\uff1a\ndesign-scout/\n\u251c\u2500\u2500 pyproject.toml\n\u251c\u2500\u2500 README.md\n\u251c\u2500\u2500 design_scout/\n\u2502   \u251c\u2500\u2500 __init__.py\n\u2502   \u251c\u2500\u2500 cli.py\n\u2502   \u251c\u2500\u2500 search/\n\u2502   \u2502   \u2514\u2500\u2500 __init__.py\n\u2502   \u251c\u2500\u2500 screenshot/\n\u2502   \u2502   \u2514\u2500\u2500 __init__.py\n\u2502   \u251c\u2500\u2500 scoring/\n\u2502   \u2502   \u2514\u2500\u2500 __init__.py\n\u2502   \u2514\u2500\u2500 report/\n\u2502       \u2514\u2500\u2500 __init__.py\n\u2514\u2500\u2500 tests/\n    \u2514\u2500\u2500 __init__.py",
       "priority": 1,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -m design_scout.cli --help",
@@ -17,8 +17,8 @@
     },
     {
       "id": "story-mmc5neax",
-      "title": "S2: 搜尋引擎整合",
-      "description": "實作多來源搜尋：\n1. design_scout/search/google.py - Google 搜尋（用 httpx + 解析結果）\n2. design_scout/search/awwwards.py - Awwwards 爬蟲\n3. design_scout/search/aggregator.py - 整合多來源 + URL 標準化 + 去重\n\n功能：\n- search(keyword, count) -> List[str] 回傳 URL 列表\n- URL 標準化（移除 query params, 統一 protocol）\n- 去重（相同 domain 只保留一個）\n- 處理搜尋失敗（graceful fallback）\n\nCLI 整合：執行 `design-scout \"fintech dashboard\"` 應該印出找到的 URL 列表",
+      "title": "S2: \u641c\u5c0b\u5f15\u64ce\u6574\u5408",
+      "description": "\u5be6\u4f5c\u591a\u4f86\u6e90\u641c\u5c0b\uff1a\n1. design_scout/search/google.py - Google \u641c\u5c0b\uff08\u7528 httpx + \u89e3\u6790\u7d50\u679c\uff09\n2. design_scout/search/awwwards.py - Awwwards \u722c\u87f2\n3. design_scout/search/aggregator.py - \u6574\u5408\u591a\u4f86\u6e90 + URL \u6a19\u6e96\u5316 + \u53bb\u91cd\n\n\u529f\u80fd\uff1a\n- search(keyword, count) -> List[str] \u56de\u50b3 URL \u5217\u8868\n- URL \u6a19\u6e96\u5316\uff08\u79fb\u9664 query params, \u7d71\u4e00 protocol\uff09\n- \u53bb\u91cd\uff08\u76f8\u540c domain \u53ea\u4fdd\u7559\u4e00\u500b\uff09\n- \u8655\u7406\u641c\u5c0b\u5931\u6557\uff08graceful fallback\uff09\n\nCLI \u6574\u5408\uff1a\u57f7\u884c `design-scout \"fintech dashboard\"` \u61c9\u8a72\u5370\u51fa\u627e\u5230\u7684 URL \u5217\u8868",
       "priority": 2,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.aggregator import search; urls = search('test', 3); print(f'Found {len(urls)} URLs'); assert len(urls) > 0\"",
@@ -29,8 +29,8 @@
     },
     {
       "id": "story-mmc5neb2",
-      "title": "S3: 批量截圖引擎",
-      "description": "實作 Playwright 截圖：\n1. design_scout/screenshot/browser.py - Browser 管理（啟動/關閉）\n2. design_scout/screenshot/capture.py - 截圖邏輯\n\n功能：\n- capture(url, output_dir) -> dict 回傳 {desktop: path, mobile: path}\n- Desktop: 1440x900\n- Mobile: 390x844\n- Timeout 處理（預設 30s）\n- 錯誤處理（載入失敗回傳 None）\n- 支援並行截圖（asyncio）\n\nCLI 整合：加入 --screenshot-only 模式測試截圖功能",
+      "title": "S3: \u6279\u91cf\u622a\u5716\u5f15\u64ce",
+      "description": "\u5be6\u4f5c Playwright \u622a\u5716\uff1a\n1. design_scout/screenshot/browser.py - Browser \u7ba1\u7406\uff08\u555f\u52d5/\u95dc\u9589\uff09\n2. design_scout/screenshot/capture.py - \u622a\u5716\u908f\u8f2f\n\n\u529f\u80fd\uff1a\n- capture(url, output_dir) -> dict \u56de\u50b3 {desktop: path, mobile: path}\n- Desktop: 1440x900\n- Mobile: 390x844\n- Timeout \u8655\u7406\uff08\u9810\u8a2d 30s\uff09\n- \u932f\u8aa4\u8655\u7406\uff08\u8f09\u5165\u5931\u6557\u56de\u50b3 None\uff09\n- \u652f\u63f4\u4e26\u884c\u622a\u5716\uff08asyncio\uff09\n\nCLI \u6574\u5408\uff1a\u52a0\u5165 --screenshot-only \u6a21\u5f0f\u6e2c\u8a66\u622a\u5716\u529f\u80fd",
       "priority": 3,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"import asyncio; from design_scout.screenshot.capture import capture; result = asyncio.run(capture('https://example.com', '/tmp')); print(result); assert result is not None\"",
@@ -41,8 +41,8 @@
     },
     {
       "id": "story-mmc5nr5h",
-      "title": "S4: AI 評分系統",
-      "description": "實作 Vision API 評分：\n1. design_scout/scoring/prompts.py - 評分 Prompt 模板\n2. design_scout/scoring/evaluator.py - 評分邏輯\n\n評分標準 Prompt：\n- 視覺吸引力 (0-25)\n- 佈局清晰度 (0-25)  \n- 現代感 (0-25)\n- 專業度 (0-25)\n- 總分 0-100 + 一句評語\n\n功能：\n- evaluate(screenshot_path) -> {score: int, comment: str, breakdown: dict}\n- 支援批量評分\n- 使用環境變數 OPENAI_API_KEY 或 ANTHROPIC_API_KEY\n\nCLI 整合：評分結果顯示在輸出中",
+      "title": "S4: AI \u8a55\u5206\u7cfb\u7d71",
+      "description": "\u5be6\u4f5c Vision API \u8a55\u5206\uff1a\n1. design_scout/scoring/prompts.py - \u8a55\u5206 Prompt \u6a21\u677f\n2. design_scout/scoring/evaluator.py - \u8a55\u5206\u908f\u8f2f\n\n\u8a55\u5206\u6a19\u6e96 Prompt\uff1a\n- \u8996\u89ba\u5438\u5f15\u529b (0-25)\n- \u4f48\u5c40\u6e05\u6670\u5ea6 (0-25)  \n- \u73fe\u4ee3\u611f (0-25)\n- \u5c08\u696d\u5ea6 (0-25)\n- \u7e3d\u5206 0-100 + \u4e00\u53e5\u8a55\u8a9e\n\n\u529f\u80fd\uff1a\n- evaluate(screenshot_path) -> {score: int, comment: str, breakdown: dict}\n- \u652f\u63f4\u6279\u91cf\u8a55\u5206\n- \u4f7f\u7528\u74b0\u5883\u8b8a\u6578 OPENAI_API_KEY \u6216 ANTHROPIC_API_KEY\n\nCLI \u6574\u5408\uff1a\u8a55\u5206\u7d50\u679c\u986f\u793a\u5728\u8f38\u51fa\u4e2d",
       "priority": 4,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.scoring.prompts import SCORING_PROMPT; print(SCORING_PROMPT[:100]); assert 'score' in SCORING_PROMPT.lower()\"",
@@ -53,8 +53,8 @@
     },
     {
       "id": "story-mmc5nr5m",
-      "title": "S5: 報告生成",
-      "description": "實作報告輸出：\n1. design_scout/report/templates/report.html - Jinja2 HTML 模板\n2. design_scout/report/generator.py - 報告生成邏輯\n\nHTML 報告內容：\n- 標題（搜尋關鍵字）\n- Top 5 設計卡片（截圖 + 分數 + 評語 + URL）\n- 按分數排序\n- 響應式設計（桌面/手機都能看）\n\nJSON 輸出：\n- results.json 包含所有資料\n\n功能：\n- generate_html(results, output_path)\n- generate_json(results, output_path)\n\nCLI 整合：完整流程 keyword -> search -> screenshot -> score -> report",
+      "title": "S5: \u5831\u544a\u751f\u6210",
+      "description": "\u5be6\u4f5c\u5831\u544a\u8f38\u51fa\uff1a\n1. design_scout/report/templates/report.html - Jinja2 HTML \u6a21\u677f\n2. design_scout/report/generator.py - \u5831\u544a\u751f\u6210\u908f\u8f2f\n\nHTML \u5831\u544a\u5167\u5bb9\uff1a\n- \u6a19\u984c\uff08\u641c\u5c0b\u95dc\u9375\u5b57\uff09\n- Top 5 \u8a2d\u8a08\u5361\u7247\uff08\u622a\u5716 + \u5206\u6578 + \u8a55\u8a9e + URL\uff09\n- \u6309\u5206\u6578\u6392\u5e8f\n- \u97ff\u61c9\u5f0f\u8a2d\u8a08\uff08\u684c\u9762/\u624b\u6a5f\u90fd\u80fd\u770b\uff09\n\nJSON \u8f38\u51fa\uff1a\n- results.json \u5305\u542b\u6240\u6709\u8cc7\u6599\n\n\u529f\u80fd\uff1a\n- generate_html(results, output_path)\n- generate_json(results, output_path)\n\nCLI \u6574\u5408\uff1a\u5b8c\u6574\u6d41\u7a0b keyword -> search -> screenshot -> score -> report",
       "priority": 5,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.report.generator import generate_html; print('generator imported')\"",
@@ -65,8 +65,8 @@
     },
     {
       "id": "story-mmc5nr5s",
-      "title": "S6: 優化與完善",
-      "description": "最終優化：\n1. 快取機制 - 避免重複截圖相同 URL\n2. 進度顯示 - rich 或 tqdm 進度條\n3. 錯誤重試 - 截圖失敗重試 2 次\n4. README.md - 完整使用說明\n5. 範例輸出 - examples/ 目錄\n\nREADME 內容：\n- 安裝說明\n- 使用範例\n- 配置說明（API keys）\n- 輸出範例\n\nCLI 完善：\n- 彩色輸出\n- 進度顯示\n- 錯誤訊息友善",
+      "title": "S6: \u512a\u5316\u8207\u5b8c\u5584",
+      "description": "\u6700\u7d42\u512a\u5316\uff1a\n1. \u5feb\u53d6\u6a5f\u5236 - \u907f\u514d\u91cd\u8907\u622a\u5716\u76f8\u540c URL\n2. \u9032\u5ea6\u986f\u793a - rich \u6216 tqdm \u9032\u5ea6\u689d\n3. \u932f\u8aa4\u91cd\u8a66 - \u622a\u5716\u5931\u6557\u91cd\u8a66 2 \u6b21\n4. README.md - \u5b8c\u6574\u4f7f\u7528\u8aaa\u660e\n5. \u7bc4\u4f8b\u8f38\u51fa - examples/ \u76ee\u9304\n\nREADME \u5167\u5bb9\uff1a\n- \u5b89\u88dd\u8aaa\u660e\n- \u4f7f\u7528\u7bc4\u4f8b\n- \u914d\u7f6e\u8aaa\u660e\uff08API keys\uff09\n- \u8f38\u51fa\u7bc4\u4f8b\n\nCLI \u5b8c\u5584\uff1a\n- \u5f69\u8272\u8f38\u51fa\n- \u9032\u5ea6\u986f\u793a\n- \u932f\u8aa4\u8a0a\u606f\u53cb\u5584",
       "priority": 6,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && test -f README.md && grep -q \"install\" README.md && echo \"README OK\"",
@@ -76,10 +76,10 @@
     },
     {
       "id": "story-mmcumfnn",
-      "title": "S7: 新增 Landing Page Gallery 來源",
-      "description": "新增 3 個 landing page gallery 作為搜尋來源：\n\n1. design_scout/search/lapa.py - lapa.ninja 爬蟲\n2. design_scout/search/landingfolio.py - landingfolio.com 爬蟲  \n3. design_scout/search/onepagelove.py - onepagelove.com 爬蟲\n\n每個模組需要：\n- async search 函數：search_lapa/search_landingfolio/search_onepagelove(keyword, count) -> List[str]\n- 解析 HTML 找出真實網站 URL（不是 gallery 自己的頁面）\n- 錯誤處理（timeout, 404 等）\n\n這些 gallery 都是真實營運網站的展示，比 Dribbble/Behance 的 mockup 更有參考價值。",
+      "title": "S7: \u65b0\u589e Landing Page Gallery \u4f86\u6e90",
+      "description": "\u65b0\u589e 3 \u500b landing page gallery \u4f5c\u70ba\u641c\u5c0b\u4f86\u6e90\uff1a\n\n1. design_scout/search/lapa.py - lapa.ninja \u722c\u87f2\n2. design_scout/search/landingfolio.py - landingfolio.com \u722c\u87f2  \n3. design_scout/search/onepagelove.py - onepagelove.com \u722c\u87f2\n\n\u6bcf\u500b\u6a21\u7d44\u9700\u8981\uff1a\n- async search \u51fd\u6578\uff1asearch_lapa/search_landingfolio/search_onepagelove(keyword, count) -> List[str]\n- \u89e3\u6790 HTML \u627e\u51fa\u771f\u5be6\u7db2\u7ad9 URL\uff08\u4e0d\u662f gallery \u81ea\u5df1\u7684\u9801\u9762\uff09\n- \u932f\u8aa4\u8655\u7406\uff08timeout, 404 \u7b49\uff09\n\n\u9019\u4e9b gallery \u90fd\u662f\u771f\u5be6\u71df\u904b\u7db2\u7ad9\u7684\u5c55\u793a\uff0c\u6bd4 Dribbble/Behance \u7684 mockup \u66f4\u6709\u53c3\u8003\u50f9\u503c\u3002",
       "priority": 7,
-      "passes": true,
+      "passes": false,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.lapa import search_lapa; from design_scout.search.landingfolio import search_landingfolio; from design_scout.search.onepagelove import search_onepagelove; print('All imports OK')\"",
       "targetFiles": [
         "lapa.py",
@@ -89,8 +89,8 @@
     },
     {
       "id": "story-mmcumlyg",
-      "title": "S8: 移除 Dribbble/Behance 來源",
-      "description": "移除 Dribbble 和 Behance 作為搜尋來源：\n\n1. 刪除 design_scout/search/dribbble.py\n2. 刪除 design_scout/search/behance.py\n3. 更新 design_scout/search/aggregator.py：\n   - 移除 dribbble 和 behance 的 import\n   - 移除對應的 search 呼叫\n   - 替換成新的 lapa/landingfolio/onepagelove 來源\n4. 更新 design_scout/search/__init__.py（如果有 export）\n\n原因：Dribbble/Behance 主要是設計作品集和 mockup，不是真實營運的網站。我們需要的是真實網站的參考。",
+      "title": "S8: \u79fb\u9664 Dribbble/Behance \u4f86\u6e90",
+      "description": "\u79fb\u9664 Dribbble \u548c Behance \u4f5c\u70ba\u641c\u5c0b\u4f86\u6e90\uff1a\n\n1. \u522a\u9664 design_scout/search/dribbble.py\n2. \u522a\u9664 design_scout/search/behance.py\n3. \u66f4\u65b0 design_scout/search/aggregator.py\uff1a\n   - \u79fb\u9664 dribbble \u548c behance \u7684 import\n   - \u79fb\u9664\u5c0d\u61c9\u7684 search \u547c\u53eb\n   - \u66ff\u63db\u6210\u65b0\u7684 lapa/landingfolio/onepagelove \u4f86\u6e90\n4. \u66f4\u65b0 design_scout/search/__init__.py\uff08\u5982\u679c\u6709 export\uff09\n\n\u539f\u56e0\uff1aDribbble/Behance \u4e3b\u8981\u662f\u8a2d\u8a08\u4f5c\u54c1\u96c6\u548c mockup\uff0c\u4e0d\u662f\u771f\u5be6\u71df\u904b\u7684\u7db2\u7ad9\u3002\u6211\u5011\u9700\u8981\u7684\u662f\u771f\u5be6\u7db2\u7ad9\u7684\u53c3\u8003\u3002",
       "priority": 8,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.aggregator import search; print('aggregator OK')\\\" && test ! -f design_scout/search/dribbble.py && test ! -f design_scout/search/behance.py && echo 'Dribbble/Behance removed'\"",
@@ -100,8 +100,8 @@
     },
     {
       "id": "story-mmcumt0l",
-      "title": "S9: 修復 DuckDuckGo 搜尋",
-      "description": "用 DuckDuckGo 取代 Google 搜尋：\n\n1. 重寫 design_scout/search/google.py 為 design_scout/search/duckduckgo.py\n2. 使用 DuckDuckGo HTML 搜尋（不需要 API key）\n3. 搜尋 query：\"{keyword} site design landing page\"\n4. 解析搜尋結果頁面找出 URL\n\n實作細節：\n- URL: https://html.duckduckgo.com/html/?q={encoded_query}\n- 使用 httpx + 解析 HTML\n- 過濾掉 duckduckgo.com 自己的連結\n- 過濾掉社交媒體、CDN 等非設計網站\n\n更新 aggregator.py 使用新的 search_duckduckgo 函數。",
+      "title": "S9: \u4fee\u5fa9 DuckDuckGo \u641c\u5c0b",
+      "description": "\u7528 DuckDuckGo \u53d6\u4ee3 Google \u641c\u5c0b\uff1a\n\n1. \u91cd\u5beb design_scout/search/google.py \u70ba design_scout/search/duckduckgo.py\n2. \u4f7f\u7528 DuckDuckGo HTML \u641c\u5c0b\uff08\u4e0d\u9700\u8981 API key\uff09\n3. \u641c\u5c0b query\uff1a\"{keyword} site design landing page\"\n4. \u89e3\u6790\u641c\u5c0b\u7d50\u679c\u9801\u9762\u627e\u51fa URL\n\n\u5be6\u4f5c\u7d30\u7bc0\uff1a\n- URL: https://html.duckduckgo.com/html/?q={encoded_query}\n- \u4f7f\u7528 httpx + \u89e3\u6790 HTML\n- \u904e\u6ffe\u6389 duckduckgo.com \u81ea\u5df1\u7684\u9023\u7d50\n- \u904e\u6ffe\u6389\u793e\u4ea4\u5a92\u9ad4\u3001CDN \u7b49\u975e\u8a2d\u8a08\u7db2\u7ad9\n\n\u66f4\u65b0 aggregator.py \u4f7f\u7528\u65b0\u7684 search_duckduckgo \u51fd\u6578\u3002",
       "priority": 9,
       "passes": true,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.duckduckgo import search_duckduckgo; import asyncio; urls = asyncio.run(search_duckduckgo('fintech landing', 5)); print(f'Found {len(urls)} URLs'); assert len(urls) >= 0\"",
@@ -112,10 +112,10 @@
     },
     {
       "id": "story-mmcumz9h",
-      "title": "S10: 更新 README",
-      "description": "更新 README.md 反映新的搜尋來源：\n\n1. 更新 Features 區塊：\n   - 移除 Dribbble/Behance\n   - 新增 Lapa.ninja, Landingfolio, OnePageLove\n   - 強調「真實營運網站」而非「設計 mockup」\n\n2. 更新 How it works 區塊：\n   - 說明搜尋來源：DuckDuckGo + Landing Page Galleries\n   - 說明這些來源都是展示真實網站\n\n3. 更新任何提到舊來源的地方\n\n4. 確保安裝說明和使用範例仍然正確",
+      "title": "S10: \u66f4\u65b0 README",
+      "description": "\u66f4\u65b0 README.md \u53cd\u6620\u65b0\u7684\u641c\u5c0b\u4f86\u6e90\uff1a\n\n1. \u66f4\u65b0 Features \u5340\u584a\uff1a\n   - \u79fb\u9664 Dribbble/Behance\n   - \u65b0\u589e Lapa.ninja, Landingfolio, OnePageLove\n   - \u5f37\u8abf\u300c\u771f\u5be6\u71df\u904b\u7db2\u7ad9\u300d\u800c\u975e\u300c\u8a2d\u8a08 mockup\u300d\n\n2. \u66f4\u65b0 How it works \u5340\u584a\uff1a\n   - \u8aaa\u660e\u641c\u5c0b\u4f86\u6e90\uff1aDuckDuckGo + Landing Page Galleries\n   - \u8aaa\u660e\u9019\u4e9b\u4f86\u6e90\u90fd\u662f\u5c55\u793a\u771f\u5be6\u7db2\u7ad9\n\n3. \u66f4\u65b0\u4efb\u4f55\u63d0\u5230\u820a\u4f86\u6e90\u7684\u5730\u65b9\n\n4. \u78ba\u4fdd\u5b89\u88dd\u8aaa\u660e\u548c\u4f7f\u7528\u7bc4\u4f8b\u4ecd\u7136\u6b63\u78ba",
       "priority": 10,
-      "passes": true,
+      "passes": false,
       "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && grep -q \"lapa\" README.md && grep -q \"landingfolio\" README.md && ! grep -q \"dribbble\" README.md && echo 'README updated'\"",
       "targetFiles": [
         "README.md"

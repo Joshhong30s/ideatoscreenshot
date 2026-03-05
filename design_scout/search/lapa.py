@@ -1,14 +1,24 @@
-"""Lapa.ninja scraper - Landing page gallery"""
+"""Lapa.ninja scraper - Landing page gallery (uses Playwright for JS rendering)"""
 
-import httpx
+import asyncio
 from typing import List
 import re
+
+# Try Playwright first, fall back to httpx
+try:
+    from playwright.async_api import async_playwright
+    HAS_PLAYWRIGHT = True
+except ImportError:
+    HAS_PLAYWRIGHT = False
+
+import httpx
 
 
 async def search_lapa(keyword: str, count: int = 15) -> List[str]:
     """Search Lapa.ninja for landing page inspiration.
     
     Lapa.ninja curates real landing pages from operating businesses.
+    Uses category pages which have better structure than search.
     
     Args:
         keyword: Search term (e.g., "fintech", "saas")
@@ -17,8 +27,67 @@ async def search_lapa(keyword: str, count: int = 15) -> List[str]:
     Returns:
         List of website URLs
     """
-    encoded_keyword = keyword.replace(" ", "+")
-    url = f"https://www.lapa.ninja/search/?q={encoded_keyword}"
+    if HAS_PLAYWRIGHT:
+        return await search_lapa_playwright(keyword, count)
+    else:
+        return await search_lapa_httpx(keyword, count)
+
+
+async def search_lapa_playwright(keyword: str, count: int = 15) -> List[str]:
+    """Use Playwright to handle JS-rendered content."""
+    # Try category page first (more reliable)
+    category_url = f"https://www.lapa.ninja/category/{keyword.lower().replace(' ', '-')}/"
+    search_url = f"https://www.lapa.ninja/search/?q={keyword.replace(' ', '+')}"
+    
+    urls = []
+    
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        
+        try:
+            # Try category page first
+            await page.goto(category_url, timeout=15000)
+            await page.wait_for_timeout(2000)  # Wait for JS
+            
+            # Extract links from the page
+            links = await page.eval_on_selector_all(
+                'a[href^="http"]',
+                'elements => elements.map(e => e.href)'
+            )
+            
+            for link in links:
+                if is_valid_landing_url(link):
+                    if link not in urls:
+                        urls.append(link)
+            
+            # If category didn't work, try search
+            if len(urls) < 5:
+                await page.goto(search_url, timeout=15000)
+                await page.wait_for_timeout(2000)
+                
+                links = await page.eval_on_selector_all(
+                    'a[href^="http"]',
+                    'elements => elements.map(e => e.href)'
+                )
+                
+                for link in links:
+                    if is_valid_landing_url(link):
+                        if link not in urls:
+                            urls.append(link)
+                            
+        except Exception as e:
+            print(f"Lapa.ninja Playwright error: {e}")
+        finally:
+            await browser.close()
+    
+    return urls[:count]
+
+
+async def search_lapa_httpx(keyword: str, count: int = 15) -> List[str]:
+    """Fallback to httpx (may get limited results due to JS rendering)."""
+    # Try category URL format
+    category_url = f"https://www.lapa.ninja/category/{keyword.lower().replace(' ', '-')}/"
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -27,19 +96,13 @@ async def search_lapa(keyword: str, count: int = 15) -> List[str]:
     
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, headers=headers, timeout=15.0, follow_redirects=True)
+            response = await client.get(category_url, headers=headers, timeout=15.0, follow_redirects=True)
             response.raise_for_status()
             
             urls = extract_lapa_urls(response.text)
             return urls[:count]
-        except httpx.TimeoutException:
-            print(f"Lapa.ninja search timeout")
-            return []
-        except httpx.HTTPStatusError as e:
-            print(f"Lapa.ninja HTTP error: {e.response.status_code}")
-            return []
         except Exception as e:
-            print(f"Lapa.ninja search error: {e}")
+            print(f"Lapa.ninja httpx error: {e}")
             return []
 
 
@@ -47,8 +110,7 @@ def extract_lapa_urls(html: str) -> List[str]:
     """Extract website URLs from Lapa.ninja HTML."""
     urls = []
     
-    # Lapa.ninja stores links to actual websites
-    # Look for external links that aren't lapa.ninja itself
+    # Look for external links
     patterns = [
         r'href="(https?://(?!(?:www\.)?lapa\.ninja)[^"]+)"',
         r'data-url="(https?://[^"]+)"',
@@ -77,6 +139,8 @@ def is_valid_landing_url(url: str) -> bool:
         'pinterest.com',
         'google.com',
         'apple.com',
+        'producthunt.com',
+        'buymeacoffee.com',
         'cdn.',
         'assets.',
         '.js',
@@ -90,6 +154,8 @@ def is_valid_landing_url(url: str) -> bool:
         'fonts.googleapis',
         'analytics',
         'tracking',
+        'gravatar.com',
+        'cloudflare',
     ]
     
     url_lower = url.lower()
