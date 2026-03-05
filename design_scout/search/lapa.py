@@ -141,6 +141,9 @@ def is_valid_landing_url(url: str) -> bool:
         'apple.com',
         'producthunt.com',
         'buymeacoffee.com',
+        'webflow.com',      # Promo links
+        'framer.link',      # Promo links
+        'try.webflow.com',  # Promo links
         'cdn.',
         'assets.',
         '.js',
