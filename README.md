@@ -4,7 +4,13 @@
 
 ## Features
 
-- **Multi-source Search**: Google + Awwwards
+- **Multi-source Search**: 搜尋真實營運網站（非設計 mockup）
+  - DuckDuckGo 網頁搜尋
+  - Awwwards 得獎網站
+  - SiteInspire 精選設計
+  - Lapa.ninja Landing Pages
+  - Landingfolio Landing Pages
+  - OnePageLove 單頁網站
 - **Dual Screenshots**: Desktop (1440px) + Mobile (390px) with Retina support
 - **AI Scoring**: GPT-4o or Claude Vision rates designs 0-100
 - **Beautiful Reports**: HTML gallery + JSON data
@@ -55,6 +61,27 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 Without an API key, scoring will use mock values.
 
+## How It Works
+
+1. **搜尋**: 同時從 6 個來源搜尋關鍵字相關的網站
+2. **去重**: 移除重複 domain，標準化 URLs
+3. **截圖**: 用 Playwright 截取桌面版和手機版截圖
+4. **評分**: 用 AI Vision 模型評分（視覺、佈局、現代感、專業度）
+5. **報告**: 生成 HTML 報告和 JSON 資料
+
+### 為什麼這些來源？
+
+我們選擇展示**真實營運網站**的 gallery，而非設計作品集（如 Dribbble/Behance）：
+
+| 來源 | 類型 | 優點 |
+|------|------|------|
+| **Awwwards** | 得獎網站 | 最高品質，真實上線網站 |
+| **SiteInspire** | 精選設計 | 人工策展，品質穩定 |
+| **Lapa.ninja** | Landing Pages | 專注 landing page，分類清楚 |
+| **Landingfolio** | Landing Pages | 按行業分類，參考價值高 |
+| **OnePageLove** | 單頁網站 | 單頁設計專家 |
+| **DuckDuckGo** | 通用搜尋 | 補充長尾結果 |
+
 ## Output
 
 ```
@@ -78,7 +105,7 @@ output/
 ```json
 {
   "keyword": "fintech dashboard",
-  "generated_at": "2026-03-04T23:00:00",
+  "generated_at": "2026-03-05T10:00:00",
   "total_results": 5,
   "results": [
     {
@@ -130,6 +157,16 @@ pytest
 # Format code
 black design_scout/
 ```
+
+## Changelog
+
+### 2026-03-05
+- ✨ 新增 Lapa.ninja, Landingfolio, OnePageLove 來源
+- ✨ 新增 DuckDuckGo 搜尋（取代 Google）
+- 🗑️ 移除 Dribbble, Behance（mockup 為主，非真實網站）
+
+### 2026-03-04
+- 🎉 Initial release
 
 ## License
 

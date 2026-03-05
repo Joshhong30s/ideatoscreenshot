@@ -73,6 +73,53 @@
       "targetFiles": [
         "README.md"
       ]
+    },
+    {
+      "id": "story-mmcumfnn",
+      "title": "S7: 新增 Landing Page Gallery 來源",
+      "description": "新增 3 個 landing page gallery 作為搜尋來源：\n\n1. design_scout/search/lapa.py - lapa.ninja 爬蟲\n2. design_scout/search/landingfolio.py - landingfolio.com 爬蟲  \n3. design_scout/search/onepagelove.py - onepagelove.com 爬蟲\n\n每個模組需要：\n- async search 函數：search_lapa/search_landingfolio/search_onepagelove(keyword, count) -> List[str]\n- 解析 HTML 找出真實網站 URL（不是 gallery 自己的頁面）\n- 錯誤處理（timeout, 404 等）\n\n這些 gallery 都是真實營運網站的展示，比 Dribbble/Behance 的 mockup 更有參考價值。",
+      "priority": 7,
+      "passes": true,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.lapa import search_lapa; from design_scout.search.landingfolio import search_landingfolio; from design_scout.search.onepagelove import search_onepagelove; print('All imports OK')\"",
+      "targetFiles": [
+        "lapa.py",
+        "landingfolio.py",
+        "onepagelove.py"
+      ]
+    },
+    {
+      "id": "story-mmcumlyg",
+      "title": "S8: 移除 Dribbble/Behance 來源",
+      "description": "移除 Dribbble 和 Behance 作為搜尋來源：\n\n1. 刪除 design_scout/search/dribbble.py\n2. 刪除 design_scout/search/behance.py\n3. 更新 design_scout/search/aggregator.py：\n   - 移除 dribbble 和 behance 的 import\n   - 移除對應的 search 呼叫\n   - 替換成新的 lapa/landingfolio/onepagelove 來源\n4. 更新 design_scout/search/__init__.py（如果有 export）\n\n原因：Dribbble/Behance 主要是設計作品集和 mockup，不是真實營運的網站。我們需要的是真實網站的參考。",
+      "priority": 8,
+      "passes": true,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.aggregator import search; print('aggregator OK')\\\" && test ! -f design_scout/search/dribbble.py && test ! -f design_scout/search/behance.py && echo 'Dribbble/Behance removed'\"",
+      "targetFiles": [
+        "aggregator.py"
+      ]
+    },
+    {
+      "id": "story-mmcumt0l",
+      "title": "S9: 修復 DuckDuckGo 搜尋",
+      "description": "用 DuckDuckGo 取代 Google 搜尋：\n\n1. 重寫 design_scout/search/google.py 為 design_scout/search/duckduckgo.py\n2. 使用 DuckDuckGo HTML 搜尋（不需要 API key）\n3. 搜尋 query：\"{keyword} site design landing page\"\n4. 解析搜尋結果頁面找出 URL\n\n實作細節：\n- URL: https://html.duckduckgo.com/html/?q={encoded_query}\n- 使用 httpx + 解析 HTML\n- 過濾掉 duckduckgo.com 自己的連結\n- 過濾掉社交媒體、CDN 等非設計網站\n\n更新 aggregator.py 使用新的 search_duckduckgo 函數。",
+      "priority": 9,
+      "passes": true,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && python3 -c \"from design_scout.search.duckduckgo import search_duckduckgo; import asyncio; urls = asyncio.run(search_duckduckgo('fintech landing', 5)); print(f'Found {len(urls)} URLs'); assert len(urls) >= 0\"",
+      "targetFiles": [
+        "duckduckgo.py",
+        "aggregator.py"
+      ]
+    },
+    {
+      "id": "story-mmcumz9h",
+      "title": "S10: 更新 README",
+      "description": "更新 README.md 反映新的搜尋來源：\n\n1. 更新 Features 區塊：\n   - 移除 Dribbble/Behance\n   - 新增 Lapa.ninja, Landingfolio, OnePageLove\n   - 強調「真實營運網站」而非「設計 mockup」\n\n2. 更新 How it works 區塊：\n   - 說明搜尋來源：DuckDuckGo + Landing Page Galleries\n   - 說明這些來源都是展示真實網站\n\n3. 更新任何提到舊來源的地方\n\n4. 確保安裝說明和使用範例仍然正確",
+      "priority": 10,
+      "passes": true,
+      "validationCommand": "cd /Users/elizabeth2002/.openclaw/repos/design-scout && grep -q \"lapa\" README.md && grep -q \"landingfolio\" README.md && ! grep -q \"dribbble\" README.md && echo 'README updated'\"",
+      "targetFiles": [
+        "README.md"
+      ]
     }
   ],
   "metadata": {

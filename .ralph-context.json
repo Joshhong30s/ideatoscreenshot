@@ -6,6 +6,21 @@
       "status": "failed",
       "filesModified": [],
       "learnings": "[unknown] /Applications/Xcode.app/Contents/Developer/usr/bin/python3: Error while finding module specification for 'design_scout.cli' (ModuleNotFoundError: No module named 'design_scout')"
+    },
+    {
+      "id": "story-mmcumfnn",
+      "title": "S7: 新增 Landing Page Gallery 來源",
+      "status": "failed",
+      "filesModified": [
+        "design_scout/search/aggregator.py",
+        "design_scout/search/behance.py",
+        "design_scout/search/google.py",
+        ".ralph-context.json",
+        ".ralph-iterations.jsonl",
+        "prd.json",
+        "progress.txt"
+      ],
+      "learnings": "[unknown] Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'design_scout.search.lapa'"
     }
   ],
   "failures": [
@@ -56,6 +71,30 @@
       "error": "/Applications/Xcode.app/Contents/Developer/usr/bin/python3: Error while finding module specification for 'design_scout.cli' (ModuleNotFoundError: No module named 'design_scout')",
       "toolNames": [],
       "iterationNumber": 1
+    },
+    {
+      "storyId": "story-mmcumfnn",
+      "storyTitle": "S7: 新增 Landing Page Gallery 來源",
+      "category": "unknown",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'design_scout.search.lapa'",
+      "toolNames": [],
+      "iterationNumber": 1
+    },
+    {
+      "storyId": "story-mmcumfnn",
+      "storyTitle": "S7: 新增 Landing Page Gallery 來源",
+      "category": "unknown",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'design_scout.search.lapa'",
+      "toolNames": [],
+      "iterationNumber": 2
+    },
+    {
+      "storyId": "story-mmcumfnn",
+      "storyTitle": "S7: 新增 Landing Page Gallery 來源",
+      "category": "unknown",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'design_scout.search.lapa'",
+      "toolNames": [],
+      "iterationNumber": 3
     }
   ]
 }
