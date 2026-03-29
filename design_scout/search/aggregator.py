@@ -1,16 +1,15 @@
-"""Search aggregator - combines multiple sources for competitor landing page research
+"""Search aggregator - parallel multi-source search with health reporting.
 
-Sources (updated 2026-03-05):
-- DuckDuckGo (25) - General web search, main source
-- Product Hunt (15) - Trending products & startups
-- Landingfolio (10) - Curated landing pages
-- Lapa.ninja (10) - Landing page gallery
-
-Focus: Real operating websites for competitive research
+Sources:
+- DuckDuckGo  — General web search (httpx, reliable)
+- Product Hunt — Trending products (Playwright)
+- Landingfolio — Curated landing pages (Playwright)
+- Lapa.ninja   — Landing page gallery (Playwright)
 """
 
 import asyncio
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Dict
 from urllib.parse import urlparse
 
 from .duckduckgo import search_duckduckgo
@@ -19,125 +18,119 @@ from .landingfolio import search_landingfolio
 from .lapa import search_lapa
 
 
-# Target: 40-60 unique URLs from all sources
-TARGET_URLS = 50
-
-# Source quotas
+# Source quotas (how many URLs to request from each source)
 DDG_COUNT = 25
 PH_COUNT = 15
 LF_COUNT = 10
 LAPA_COUNT = 10
 
+TARGET_URLS = DDG_COUNT + PH_COUNT + LF_COUNT + LAPA_COUNT
 
-def search(keyword: str, count: int = TARGET_URLS) -> List[str]:
-    """Synchronous wrapper for async search (for non-async callers).
-    
-    Combines results from multiple sources, deduplicates, and normalizes URLs.
-    Returns up to `count` unique URLs for competitive research.
-    """
+
+@dataclass
+class SourceResult:
+    name: str
+    urls: List[str] = field(default_factory=list)
+    error: str = ""
+    ok: bool = True
+
+
+@dataclass
+class SearchReport:
+    """Health report for a search run."""
+    sources: List[SourceResult] = field(default_factory=list)
+    total_before_dedup: int = 0
+    total_after_dedup: int = 0
+
+    @property
+    def all_failed(self) -> bool:
+        return all(not s.ok or len(s.urls) == 0 for s in self.sources)
+
+    def summary(self) -> str:
+        lines = []
+        for s in self.sources:
+            status = f"✓ {len(s.urls)} URLs" if s.ok and s.urls else f"✗ {s.error or '0 URLs'}"
+            lines.append(f"   {s.name:15s} {status}")
+        lines.append(f"   {'─' * 30}")
+        lines.append(f"   Before dedup: {self.total_before_dedup}")
+        lines.append(f"   After dedup:  {self.total_after_dedup}")
+        return "\n".join(lines)
+
+
+def search(keyword: str, count: int = TARGET_URLS) -> tuple[List[str], SearchReport]:
+    """Synchronous wrapper."""
     return asyncio.run(search_async(keyword, count))
 
 
-async def search_async(keyword: str, count: int = TARGET_URLS) -> List[str]:
-    """Search multiple sources for competitor landing pages.
-    
-    Sources:
-    - DuckDuckGo (~25 URLs) - Primary source
-    - Product Hunt (~15 URLs) - Trending products
-    - Landingfolio (~10 URLs) - Curated landing pages
-    - Lapa.ninja (~10 URLs) - Landing page gallery
-    
-    After deduplication, returns 40-60 unique URLs.
-    
-    Args:
-        keyword: Search term (e.g., "fintech dashboard")
-        count: Target number of URLs (default: 50)
-        
-    Returns:
-        List of unique, normalized URLs
-    """
-    print(f"   Searching DuckDuckGo...")
-    ddg_results = await search_duckduckgo(keyword, DDG_COUNT)
-    print(f"   → DuckDuckGo: {len(ddg_results)} URLs")
-    
-    print(f"   Searching Product Hunt...")
-    ph_results = await search_producthunt(keyword, PH_COUNT)
-    print(f"   → Product Hunt: {len(ph_results)} URLs")
-    
-    print(f"   Searching Landingfolio...")
-    landingfolio_results = await search_landingfolio(keyword, LF_COUNT)
-    print(f"   → Landingfolio: {len(landingfolio_results)} URLs")
-    
-    print(f"   Searching Lapa.ninja...")
-    lapa_results = await search_lapa(keyword, LAPA_COUNT)
-    print(f"   → Lapa.ninja: {len(lapa_results)} URLs")
-    
-    # Combine all results
-    all_urls = []
-    all_urls.extend(ddg_results)
-    all_urls.extend(ph_results)
-    all_urls.extend(landingfolio_results)
-    all_urls.extend(lapa_results)
-    
-    print(f"   Total before dedup: {len(all_urls)}")
-    
-    # Normalize and deduplicate
-    unique_urls = deduplicate_urls(all_urls)
-    
-    print(f"   After dedup: {len(unique_urls)} unique URLs")
-    
-    return unique_urls[:count]
+async def search_async(keyword: str, count: int = TARGET_URLS) -> tuple[List[str], SearchReport]:
+    """Search all sources **in parallel**, deduplicate, and return URLs + health report."""
 
+    async def _run(name: str, coro) -> SourceResult:
+        try:
+            urls = await coro
+            return SourceResult(name=name, urls=urls)
+        except Exception as e:
+            return SourceResult(name=name, urls=[], error=str(e), ok=False)
+
+    results = await asyncio.gather(
+        _run("DuckDuckGo", search_duckduckgo(keyword, DDG_COUNT)),
+        _run("Product Hunt", search_producthunt(keyword, PH_COUNT)),
+        _run("Landingfolio", search_landingfolio(keyword, LF_COUNT)),
+        _run("Lapa.ninja", search_lapa(keyword, LAPA_COUNT)),
+    )
+
+    report = SearchReport(sources=list(results))
+
+    # Combine
+    all_urls: List[str] = []
+    for r in results:
+        all_urls.extend(r.urls)
+
+    report.total_before_dedup = len(all_urls)
+
+    # Deduplicate
+    unique = deduplicate_urls(all_urls)
+    report.total_after_dedup = len(unique)
+
+    return unique[:count], report
+
+
+# ---------------------------------------------------------------------------
+# URL helpers
+# ---------------------------------------------------------------------------
 
 def deduplicate_urls(urls: List[str]) -> List[str]:
-    """Remove duplicate URLs based on normalized domain.
-    
-    - Removes query parameters
-    - Normalizes protocol (prefer https)
-    - Keeps only one URL per domain
-    """
-    seen_domains = set()
-    unique_urls = []
-    
+    """One URL per domain, normalized."""
+    seen_domains: set[str] = set()
+    unique: List[str] = []
+
     for url in urls:
         normalized = normalize_url(url)
         if not normalized:
             continue
-            
         domain = get_domain(normalized)
-        if domain not in seen_domains:
+        if domain and domain not in seen_domains:
             seen_domains.add(domain)
-            unique_urls.append(normalized)
-    
-    return unique_urls
+            unique.append(normalized)
+
+    return unique
 
 
 def normalize_url(url: str) -> str:
-    """Normalize a URL for comparison."""
     try:
         parsed = urlparse(url)
-        
-        # Use https by default
-        scheme = 'https'
-        
-        # Remove www. prefix for consistency
+        scheme = "https"
         netloc = parsed.netloc.lower()
-        if netloc.startswith('www.'):
+        if netloc.startswith("www."):
             netloc = netloc[4:]
-        
-        # Remove query params and fragments for deduplication
-        # but keep the path
-        path = parsed.path.rstrip('/')
-        
+        path = parsed.path.rstrip("/")
         return f"{scheme}://{netloc}{path}"
     except Exception:
         return ""
 
 
 def get_domain(url: str) -> str:
-    """Extract domain from URL."""
     try:
-        parsed = urlparse(url)
-        return parsed.netloc.lower()
+        return urlparse(url).netloc.lower()
     except Exception:
         return ""

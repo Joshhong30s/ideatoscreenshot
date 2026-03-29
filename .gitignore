@@ -1,4 +1,11 @@
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
 # Demo/test output
 demo-output/
 output/
