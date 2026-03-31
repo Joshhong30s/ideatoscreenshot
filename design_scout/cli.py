@@ -4,14 +4,13 @@ Flow:
 1. Search 4 sources in parallel  (or read a URL list file)
 2. Deduplicate & health-check
 3. Screenshot all URLs (desktop + mobile) — skip cached
-4. AI-score all screenshots in parallel  — skip cached
-5. Rank & output HTML + JSON report
+4. Output HTML gallery + JSON report
 """
 
 import asyncio
 import sys
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 
 import click
 
@@ -19,8 +18,6 @@ from design_scout import __version__
 from design_scout.cache import Cache
 from design_scout.search.aggregator import search_async, TARGET_URLS
 from design_scout.screenshot.capture import capture_batch
-from design_scout.screenshot.browser import BrowserManager
-from design_scout.scoring.evaluator import evaluate
 from design_scout.report.generator import generate_html, generate_json, format_result
 
 
@@ -31,9 +28,8 @@ def _echo(msg: str, **kw) -> None:
 @click.command()
 @click.argument("keyword", required=False, default=None)
 @click.option("--urls", "-u", type=click.Path(exists=True), help="Text file with one URL per line (skips search)")
-@click.option("--count", "-c", default=5, help="Number of TOP results to return (default: 5)")
+@click.option("--count", "-c", default=30, help="Max number of results in report (default: 30)")
 @click.option("--output", "-o", default="./output", help="Output directory (default: ./output)")
-@click.option("--no-score", is_flag=True, help="Skip AI scoring (faster, no API needed)")
 @click.option("--no-cache", is_flag=True, help="Ignore cache, re-process everything")
 @click.option("--search-count", "-s", default=TARGET_URLS, help=f"Target search URLs (default: {TARGET_URLS})")
 @click.version_option(version=__version__, prog_name="design-scout")
@@ -42,7 +38,6 @@ def main(
     urls: Optional[str],
     count: int,
     output: str,
-    no_score: bool,
     no_cache: bool,
     search_count: int,
 ) -> None:
@@ -63,15 +58,14 @@ def main(
         _echo(f'   Keyword: "{keyword}"', fg="white")
     if urls:
         _echo(f"   URL list: {urls}", fg="white")
-    _echo(f"   Top {count} results → {output}\n", fg="white")
+    _echo(f"   Max {count} results → {output}\n", fg="white")
 
     try:
         asyncio.run(run_scout(
             keyword=keyword,
             urls_file=urls,
-            top_n=count,
+            max_results=count,
             output=output,
-            no_score=no_score,
             no_cache=no_cache,
             search_count=search_count,
         ))
@@ -93,9 +87,8 @@ async def run_scout(
     *,
     keyword: Optional[str],
     urls_file: Optional[str],
-    top_n: int,
+    max_results: int,
     output: str,
-    no_score: bool,
     no_cache: bool,
     search_count: int,
 ) -> None:
@@ -164,66 +157,28 @@ async def run_scout(
         _echo("沒有截圖成功。請檢查網路連線。", fg="yellow")
         return
 
-    # ── Step 3: AI Scoring (parallel, with cache) ─────────────────────
-    results: List[Dict[str, Any]] = []
-
-    if no_score:
-        _echo("Step 3: 跳過 AI 評分（--no-score）", fg="white")
-        for url, shots in all_shots.items():
-            results.append(format_result(url, shots, None))
-    else:
-        _echo(f"Step 3: 並行 AI 評分（{len(all_shots)} 組截圖）", fg="white")
-
-        async def _score_one(url: str, shots: Dict[str, str]) -> Dict[str, Any]:
-            # Check cache first
-            if cache:
-                cached_score = cache.get_score(url)
-                if cached_score:
-                    return format_result(url, shots, cached_score)
-
-            evaluation = None
-            desktop = shots.get("desktop")
-            if desktop:
-                evaluation = await evaluate(desktop)
-                if evaluation and cache:
-                    cache.set_score(url, evaluation)
-            return format_result(url, shots, evaluation)
-
-        tasks = [_score_one(url, shots) for url, shots in all_shots.items()]
-        results = await asyncio.gather(*tasks)
-
-        scored = sum(1 for r in results if r.get("score", 0) > 0)
-        _echo(f"   ✓ {scored}/{len(results)} 有評分", fg="green")
-
     # Save cache
     if cache:
         cache.save()
 
-    # ── Step 4: Rank ──────────────────────────────────────────────────
-    _echo(f"Step 4: 排序取 Top {top_n}", fg="white")
-    sorted_results = sorted(results, key=lambda x: x.get("score", 0), reverse=True)
-    top_results = sorted_results[:top_n]
+    # ── Step 3: Build results & generate report ───────────────────────
+    results = [format_result(url, shots) for url, shots in all_shots.items()]
+    results = results[:max_results]
 
-    if top_results and top_results[0].get("score"):
-        lo = top_results[-1]["score"]
-        hi = top_results[0]["score"]
-        click.echo(f"   分數範圍: {lo}–{hi}")
-
-    # ── Step 5: Report ────────────────────────────────────────────────
-    _echo("Step 5: 生成報告", fg="white")
+    _echo(f"Step 3: 生成報告（{len(results)} 筆結果）", fg="white")
     display_keyword = keyword or "URL list"
-    html_path = generate_html(top_results, str(output_path), display_keyword)
-    json_path = generate_json(sorted_results, str(output_path), display_keyword)
 
-    click.echo(f"   HTML（Top {top_n}）: {html_path}")
-    click.echo(f"   JSON（全部 {len(sorted_results)}）: {json_path}")
+    html_path = generate_html(results, str(output_path), display_keyword)
+    json_path = generate_json(results, str(output_path), display_keyword)
+
+    click.echo(f"   HTML: {html_path}")
+    click.echo(f"   JSON: {json_path}")
 
     # ── Summary ───────────────────────────────────────────────────────
     _echo(f"\n✅ 完成！", fg="green", bold=True)
     click.echo(f"   URLs:  {total}")
     click.echo(f"   截圖:  {success}")
-    click.echo(f"   評分:  {len(results)}")
-    click.echo(f"   輸出:  Top {top_n}")
+    click.echo(f"   報告:  {len(results)} 筆")
     click.echo(f"\n   👉 open {html_path}\n")
 
 
