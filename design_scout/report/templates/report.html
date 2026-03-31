@@ -1,245 +1,856 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Design Scout: {{ keyword }}</title>
     <style>
-        * {
+        /* ── Reset & Base ─────────────────────────────────── */
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
+            background: #0a0a0a;
+            color: #c1c2c5;
+            line-height: 1.5;
+            overflow-x: hidden;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .subtitle {
-            color: #666;
-            font-size: 1.1rem;
-        }
-        
-        .results {
-            display: grid;
-            gap: 2rem;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        
-        .card-header {
+
+        /* ── Header / Toolbar ─────────────────────────────── */
+        .toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #25262b;
+            padding: 0.75rem 1.5rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.5rem;
-            background: #fafafa;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .rank {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #666;
-        }
-        
-        .rank.gold { color: #FFD700; }
-        .rank.silver { color: #C0C0C0; }
-        .rank.bronze { color: #CD7F32; }
-        
-        .score {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-        
-        .score.excellent { color: #22c55e; }
-        .score.good { color: #3b82f6; }
-        .score.average { color: #f59e0b; }
-        .score.poor { color: #ef4444; }
-        
-        .screenshots {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
+            justify-content: space-between;
             gap: 1rem;
-            padding: 1rem;
+            flex-wrap: wrap;
         }
-        
-        .screenshot {
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fefefe;
+            letter-spacing: -0.02em;
+        }
+
+        .keyword-badge {
+            background: #25262b;
+            color: #a6a7ab;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+
+        .result-count {
+            color: #5c5f66;
+            font-size: 0.8rem;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: #25262b;
+            color: #c1c2c5;
+            border: 1px solid #373a40;
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn:hover {
+            background: #2c2e33;
+            border-color: #5c5f66;
+            color: #fefefe;
+        }
+
+        .btn.active {
+            background: #7c3aed;
+            border-color: #7c3aed;
+            color: #fff;
+        }
+
+        .star-count-badge {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ── Export Dropdown ───────────────────────────────── */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.35rem;
+            background: #25262b;
+            border: 1px solid #373a40;
             border-radius: 8px;
             overflow: hidden;
-            border: 1px solid #eee;
+            min-width: 160px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 200;
         }
-        
-        .screenshot img {
+
+        .dropdown-menu.open {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 0.6rem 1rem;
+            background: none;
+            border: none;
+            color: #c1c2c5;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.1s;
+        }
+
+        .dropdown-item:hover {
+            background: #2c2e33;
+            color: #fefefe;
+        }
+
+        /* ── Masonry Gallery ──────────────────────────────── */
+        .gallery {
+            columns: 5 280px;
+            column-gap: 10px;
+            padding: 10px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1400px) { .gallery { columns: 4 280px; } }
+        @media (max-width: 1100px) { .gallery { columns: 3 280px; } }
+        @media (max-width: 800px)  { .gallery { columns: 2 240px; column-gap: 8px; padding: 8px; } }
+        @media (max-width: 500px)  { .gallery { columns: 1; } }
+
+        /* ── Gallery Item (Card) ──────────────────────────── */
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            background: #1a1b1e;
+            border: 1px solid transparent;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            animation: fadeInUp 0.4s ease both;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.03) rotate(0.02deg);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+            border-color: #373a40;
+            z-index: 2;
+        }
+
+        .gallery-item.hidden {
+            display: none;
+        }
+
+        .gallery-item img {
             width: 100%;
             height: auto;
             display: block;
+            transition: opacity 0.3s ease;
         }
-        
-        .screenshot-label {
-            background: #f5f5f5;
-            padding: 0.5rem;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #666;
+
+        .gallery-item img.broken {
+            min-height: 200px;
+            background: #1a1b1e;
         }
-        
-        .details {
+
+        /* ── Star Button (on card) ────────────────────────── */
+        .star-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #5c5f66;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 3;
+            opacity: 0;
+        }
+
+        .gallery-item:hover .star-btn,
+        .star-btn.active {
+            opacity: 1;
+        }
+
+        .star-btn:hover {
+            background: rgba(0, 0, 0, 0.75);
+            transform: scale(1.15);
+        }
+
+        .star-btn.active {
+            color: #fbbf24;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        /* ── URL Overlay (on hover) ───────────────────────── */
+        .url-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 28px 10px 8px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            color: #a6a7ab;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gallery-item:hover .url-overlay {
+            opacity: 1;
+        }
+
+        /* ── Lightbox ─────────────────────────────────────── */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 1000;
+            display: none;
+            overflow-y: auto;
             padding: 1.5rem;
         }
-        
-        .url {
-            color: #3b82f6;
-            text-decoration: none;
-            word-break: break-all;
-            display: block;
-            margin-bottom: 1rem;
+
+        .lightbox.open {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
         }
-        
-        .url:hover {
+
+        .lightbox-header {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-shrink: 0;
+        }
+
+        .lightbox-url {
+            color: #8c8fa3;
+            text-decoration: none;
+            font-size: 0.85rem;
+            max-width: 60%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lightbox-url:hover {
+            color: #fefefe;
             text-decoration: underline;
         }
-        
-        .comment {
-            background: #f9fafb;
-            padding: 1rem;
+
+        .lightbox-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .lightbox-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #c1c2c5;
+            width: 36px;
+            height: 36px;
             border-radius: 8px;
-            border-left: 4px solid #3b82f6;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
         }
-        
-        .breakdown {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
+
+        .lightbox-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fefefe;
+        }
+
+        .lightbox-btn.star-active {
+            color: #fbbf24;
+        }
+
+        .lightbox-screenshots {
+            display: flex;
+            gap: 1.5rem;
+            max-width: 1400px;
+            width: 100%;
+            align-items: flex-start;
+            justify-content: center;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .lightbox-desktop {
+            flex: 2;
+            max-width: 900px;
+        }
+
+        .lightbox-mobile {
+            flex: 0 0 220px;
+        }
+
+        .lightbox-screenshots img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #25262b;
+            display: block;
+        }
+
+        .lightbox-device-label {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #5c5f66;
+            margin-top: 0.4rem;
+        }
+
+        .lightbox-notes {
+            width: 100%;
+            max-width: 1400px;
             margin-top: 1rem;
+            flex-shrink: 0;
         }
-        
-        .breakdown-item {
+
+        .lightbox-notes textarea {
+            width: 100%;
+            background: #1a1b1e;
+            border: 1px solid #25262b;
+            border-radius: 8px;
+            color: #c1c2c5;
+            padding: 0.75rem 1rem;
+            font-family: inherit;
+            font-size: 0.85rem;
+            resize: vertical;
+            min-height: 60px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .lightbox-notes textarea:focus {
+            border-color: #7c3aed;
+        }
+
+        .lightbox-notes textarea::placeholder {
+            color: #5c5f66;
+        }
+
+        /* Nav arrows */
+        .lightbox-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #8c8fa3;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            z-index: 1001;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.12);
+            color: #fefefe;
+        }
+
+        .lightbox-nav.prev { left: 1rem; }
+        .lightbox-nav.next { right: 1rem; }
+
+        @media (max-width: 800px) {
+            .lightbox-screenshots {
+                flex-direction: column;
+                align-items: center;
+            }
+            .lightbox-mobile {
+                flex: none;
+                width: 200px;
+            }
+            .lightbox-nav { display: none; }
+        }
+
+        /* ── Empty State ──────────────────────────────────── */
+        .empty-state {
             text-align: center;
+            padding: 6rem 2rem;
+            color: #5c5f66;
         }
-        
-        .breakdown-label {
-            font-size: 0.8rem;
-            color: #666;
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
-        
-        .breakdown-value {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        
-        footer {
+
+        /* ── Footer ───────────────────────────────────────── */
+        .footer {
             text-align: center;
-            margin-top: 3rem;
             padding: 2rem;
-            color: #999;
-            font-size: 0.9rem;
+            color: #373a40;
+            font-size: 0.75rem;
         }
-        
-        @media (max-width: 768px) {
-            .screenshots {
-                grid-template-columns: 1fr;
+
+        /* ── Animations ───────────────────────────────────── */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
             }
-            
-            .breakdown {
-                grid-template-columns: repeat(2, 1fr);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
+        }
+
+        /* ── Placeholder SVG for broken images ────────────── */
+        .placeholder-img {
+            width: 100%;
+            min-height: 200px;
+            background: #1a1b1e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #373a40;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎨 Design Scout</h1>
-            <p class="subtitle">Top designs for "{{ keyword }}"</p>
-            <p class="subtitle">Generated: {{ generated_at }}</p>
-        </header>
-        
-        <div class="results">
-            {% for result in results %}
-            <div class="card">
-                <div class="card-header">
-                    <span class="rank {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
-                        #{{ loop.index }}
-                    </span>
-                    <span class="score {% if result.score >= 80 %}excellent{% elif result.score >= 60 %}good{% elif result.score >= 40 %}average{% else %}poor{% endif %}">
-                        {{ result.score }}/100
-                    </span>
-                </div>
-                
-                <div class="screenshots">
-                    {% if result.screenshots.desktop %}
-                    <div class="screenshot">
-                        <img src="{{ result.screenshots.desktop }}" alt="Desktop view">
-                        <div class="screenshot-label">Desktop (1440px)</div>
-                    </div>
-                    {% endif %}
-                    {% if result.screenshots.mobile %}
-                    <div class="screenshot">
-                        <img src="{{ result.screenshots.mobile }}" alt="Mobile view">
-                        <div class="screenshot-label">Mobile (390px)</div>
-                    </div>
-                    {% endif %}
-                </div>
-                
-                <div class="details">
-                    <a href="{{ result.url }}" target="_blank" class="url">{{ result.url }}</a>
-                    
-                    {% if result.comment %}
-                    <div class="comment">{{ result.comment }}</div>
-                    {% endif %}
-                    
-                    {% if result.breakdown %}
-                    <div class="breakdown">
-                        <div class="breakdown-item">
-                            <div class="breakdown-label">Visual</div>
-                            <div class="breakdown-value">{{ result.breakdown.visual_appeal }}/25</div>
-                        </div>
-                        <div class="breakdown-item">
-                            <div class="breakdown-label">Layout</div>
-                            <div class="breakdown-value">{{ result.breakdown.layout }}/25</div>
-                        </div>
-                        <div class="breakdown-item">
-                            <div class="breakdown-label">Modern</div>
-                            <div class="breakdown-value">{{ result.breakdown.modernity }}/25</div>
-                        </div>
-                        <div class="breakdown-item">
-                            <div class="breakdown-label">Pro</div>
-                            <div class="breakdown-value">{{ result.breakdown.professionalism }}/25</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <footer>
-            Powered by Design Scout | {{ results|length }} results found
-        </footer>
+
+<!-- ── Toolbar ──────────────────────────────────────────── -->
+<div class="toolbar">
+    <div class="toolbar-left">
+        <span class="logo">Design Scout</span>
+        <span class="keyword-badge">{{ keyword }}</span>
+        <span class="result-count" id="resultCount">{{ total_count }} results</span>
     </div>
+    <div class="toolbar-right">
+        <span class="star-count-badge" id="starCountBadge" style="display:none">
+            ★ <span id="starCount">0</span>
+        </span>
+        <button class="btn" id="filterBtn" onclick="toggleFilter()">
+            Show Starred
+        </button>
+        <div class="dropdown">
+            <button class="btn" id="exportBtn" onclick="toggleExportMenu()">
+                Export ▾
+            </button>
+            <div class="dropdown-menu" id="exportMenu">
+                <button class="dropdown-item" onclick="exportStarred('html')">Export as HTML</button>
+                <button class="dropdown-item" onclick="exportStarred('json')">Export as JSON</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Gallery ─────────────────────────────────────────── -->
+{% if results %}
+<div class="gallery" id="gallery">
+    {% for result in results %}
+    <div class="gallery-item"
+         data-index="{{ loop.index0 }}"
+         data-url="{{ result.url }}"
+         data-desktop="{{ result.screenshots.desktop or '' }}"
+         data-mobile="{{ result.screenshots.mobile or '' }}"
+         style="animation-delay: {{ loop.index0 * 0.04 }}s"
+         onclick="openLightbox({{ loop.index0 }})">
+
+        <button class="star-btn"
+                data-star-url="{{ result.url }}"
+                onclick="event.stopPropagation(); toggleStar('{{ result.url }}')">★</button>
+
+        {% if result.screenshots.desktop %}
+        <img src="{{ result.screenshots.desktop }}"
+             alt="{{ result.url }}"
+             loading="lazy"
+             onerror="this.parentElement.innerHTML += '<div class=placeholder-img>載入失敗</div>'; this.style.display='none';">
+        {% elif result.screenshots.mobile %}
+        <img src="{{ result.screenshots.mobile }}"
+             alt="{{ result.url }}"
+             loading="lazy"
+             onerror="this.parentElement.innerHTML += '<div class=placeholder-img>載入失敗</div>'; this.style.display='none';">
+        {% else %}
+        <div class="placeholder-img">No screenshot</div>
+        {% endif %}
+
+        <div class="url-overlay">{{ result.url }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon">📭</div>
+    <p>沒有結果。請換個關鍵字試試。</p>
+</div>
+{% endif %}
+
+<!-- ── Lightbox ─────────────────────────────────────────── -->
+<div class="lightbox" id="lightbox">
+    <div class="lightbox-header">
+        <a class="lightbox-url" id="lbUrl" href="#" target="_blank"></a>
+        <div class="lightbox-actions">
+            <button class="lightbox-btn" id="lbStar" onclick="toggleStarFromLightbox()">★</button>
+            <button class="lightbox-btn" onclick="closeLightbox()">✕</button>
+        </div>
+    </div>
+    <div class="lightbox-screenshots">
+        <div class="lightbox-desktop" id="lbDesktopWrap">
+            <img id="lbDesktop" src="" alt="Desktop">
+            <div class="lightbox-device-label">Desktop 1440px</div>
+        </div>
+        <div class="lightbox-mobile" id="lbMobileWrap">
+            <img id="lbMobile" src="" alt="Mobile">
+            <div class="lightbox-device-label">Mobile 390px</div>
+        </div>
+    </div>
+    <div class="lightbox-notes">
+        <textarea id="lbNotes" placeholder="寫下你的筆記...（自動儲存至瀏覽器）" rows="2"></textarea>
+    </div>
+</div>
+
+<button class="lightbox-nav prev" id="lbPrev" onclick="navigateLightbox(-1)">‹</button>
+<button class="lightbox-nav next" id="lbNext" onclick="navigateLightbox(1)">›</button>
+
+<!-- ── Footer ──────────────────────────────────────────── -->
+<div class="footer">
+    Design Scout · {{ generated_at }} · {{ total_count }} results
+</div>
+
+<!-- ── JavaScript ──────────────────────────────────────── -->
+<script>
+(function() {
+    'use strict';
+
+    // ── State ────────────────────────────────────────────
+    const KEYWORD = {{ keyword | tojson }};
+    const STORAGE_KEY = 'ds-stars-' + encodeURIComponent(KEYWORD);
+    const NOTES_KEY = 'ds-notes-' + encodeURIComponent(KEYWORD);
+
+    let starred = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+    let notes = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
+    let filterStarred = false;
+    let currentIndex = -1;
+
+    const items = [...document.querySelectorAll('.gallery-item')];
+
+    // ── Init ─────────────────────────────────────────────
+    function init() {
+        // Restore star UI
+        starred.forEach(url => {
+            const btn = document.querySelector(`.star-btn[data-star-url="${CSS.escape(url)}"]`);
+            if (btn) btn.classList.add('active');
+        });
+        updateStarCount();
+    }
+
+    // ── Star ─────────────────────────────────────────────
+    window.toggleStar = function(url) {
+        if (starred.has(url)) starred.delete(url);
+        else starred.add(url);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...starred]));
+
+        const btn = document.querySelector(`.star-btn[data-star-url="${CSS.escape(url)}"]`);
+        if (btn) btn.classList.toggle('active', starred.has(url));
+
+        updateStarCount();
+        updateLightboxStar();
+
+        if (filterStarred) applyFilter();
+    };
+
+    window.toggleStarFromLightbox = function() {
+        const item = items[currentIndex];
+        if (item) toggleStar(item.dataset.url);
+    };
+
+    function updateStarCount() {
+        const count = starred.size;
+        const badge = document.getElementById('starCountBadge');
+        const countEl = document.getElementById('starCount');
+        badge.style.display = count > 0 ? '' : 'none';
+        countEl.textContent = count;
+    }
+
+    function updateLightboxStar() {
+        const item = items[currentIndex];
+        if (!item) return;
+        const btn = document.getElementById('lbStar');
+        btn.classList.toggle('star-active', starred.has(item.dataset.url));
+    }
+
+    // ── Filter ───────────────────────────────────────────
+    window.toggleFilter = function() {
+        filterStarred = !filterStarred;
+        const btn = document.getElementById('filterBtn');
+        btn.classList.toggle('active', filterStarred);
+        btn.textContent = filterStarred ? 'Show All' : 'Show Starred';
+        applyFilter();
+    };
+
+    function applyFilter() {
+        let visibleCount = 0;
+        items.forEach(item => {
+            const url = item.dataset.url;
+            const hide = filterStarred && !starred.has(url);
+            item.classList.toggle('hidden', hide);
+            if (!hide) visibleCount++;
+        });
+        document.getElementById('resultCount').textContent =
+            filterStarred ? visibleCount + ' starred' : items.length + ' results';
+    }
+
+    // ── Lightbox ─────────────────────────────────────────
+    window.openLightbox = function(index) {
+        if (index < 0 || index >= items.length) return;
+        currentIndex = index;
+        const item = items[index];
+        const url = item.dataset.url;
+        const desktop = item.dataset.desktop;
+        const mobile = item.dataset.mobile;
+
+        document.getElementById('lbUrl').href = url;
+        document.getElementById('lbUrl').textContent = url;
+
+        const desktopImg = document.getElementById('lbDesktop');
+        const mobileImg = document.getElementById('lbMobile');
+        const desktopWrap = document.getElementById('lbDesktopWrap');
+        const mobileWrap = document.getElementById('lbMobileWrap');
+
+        if (desktop) {
+            desktopImg.src = desktop;
+            desktopWrap.style.display = '';
+        } else {
+            desktopWrap.style.display = 'none';
+        }
+
+        if (mobile) {
+            mobileImg.src = mobile;
+            mobileWrap.style.display = '';
+        } else {
+            mobileWrap.style.display = 'none';
+        }
+
+        // Notes
+        document.getElementById('lbNotes').value = notes[url] || '';
+
+        // Star state
+        updateLightboxStar();
+
+        // Show
+        document.getElementById('lightbox').classList.add('open');
+        document.getElementById('lbPrev').style.display = index > 0 ? '' : 'none';
+        document.getElementById('lbNext').style.display = index < items.length - 1 ? '' : 'none';
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeLightbox = function() {
+        document.getElementById('lightbox').classList.remove('open');
+        document.getElementById('lbPrev').style.display = 'none';
+        document.getElementById('lbNext').style.display = 'none';
+        document.body.style.overflow = '';
+        currentIndex = -1;
+    };
+
+    window.navigateLightbox = function(dir) {
+        const nextIndex = currentIndex + dir;
+        // Skip hidden items when filtering
+        if (filterStarred) {
+            let i = nextIndex;
+            while (i >= 0 && i < items.length && items[i].classList.contains('hidden')) {
+                i += dir;
+            }
+            if (i >= 0 && i < items.length) openLightbox(i);
+        } else {
+            if (nextIndex >= 0 && nextIndex < items.length) openLightbox(nextIndex);
+        }
+    };
+
+    // Save notes on input
+    document.getElementById('lbNotes').addEventListener('input', function() {
+        const item = items[currentIndex];
+        if (!item) return;
+        notes[item.dataset.url] = this.value;
+        localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+    });
+
+    // Keyboard nav
+    document.addEventListener('keydown', function(e) {
+        if (currentIndex === -1) return;
+        // Don't handle keys when typing in textarea
+        if (e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') navigateLightbox(1);
+        if (e.key === 'ArrowLeft') navigateLightbox(-1);
+        if (e.key === 's' || e.key === 'S') toggleStarFromLightbox();
+    });
+
+    // Close lightbox on background click
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+        if (e.target === this) closeLightbox();
+    });
+
+    // ── Export ────────────────────────────────────────────
+    window.toggleExportMenu = function() {
+        document.getElementById('exportMenu').classList.toggle('open');
+    };
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            document.getElementById('exportMenu').classList.remove('open');
+        }
+    });
+
+    window.exportStarred = function(format) {
+        document.getElementById('exportMenu').classList.remove('open');
+
+        const starredItems = items
+            .filter(item => starred.has(item.dataset.url))
+            .map(item => ({
+                url: item.dataset.url,
+                desktop: item.dataset.desktop,
+                mobile: item.dataset.mobile,
+                notes: notes[item.dataset.url] || ''
+            }));
+
+        if (starredItems.length === 0) {
+            alert('還沒有標星的項目。先瀏覽並標記你喜歡的設計！');
+            return;
+        }
+
+        if (format === 'json') {
+            downloadBlob(
+                JSON.stringify(starredItems, null, 2),
+                'starred-' + encodeURIComponent(KEYWORD) + '.json',
+                'application/json'
+            );
+        } else {
+            const html = buildExportHTML(starredItems);
+            downloadBlob(
+                html,
+                'starred-' + encodeURIComponent(KEYWORD) + '.html',
+                'text/html'
+            );
+        }
+    };
+
+    function buildExportHTML(starredItems) {
+        let cards = '';
+        starredItems.forEach(function(item) {
+            const img = item.desktop || item.mobile || '';
+            const noteHtml = item.notes
+                ? '<p style="color:#a6a7ab;font-size:0.85rem;margin-top:0.5rem">' + escapeHtml(item.notes) + '</p>'
+                : '';
+            cards += '<div style="break-inside:avoid;margin-bottom:12px;background:#1a1b1e;border-radius:8px;overflow:hidden">'
+                + (img ? '<img src="' + escapeHtml(img) + '" style="width:100%;display:block" loading="lazy">' : '')
+                + '<div style="padding:0.6rem 0.8rem">'
+                + '<a href="' + escapeHtml(item.url) + '" target="_blank" style="color:#8c8fa3;font-size:0.75rem;text-decoration:none;word-break:break-all">' + escapeHtml(item.url) + '</a>'
+                + noteHtml
+                + '</div></div>';
+        });
+
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            + '<title>Starred: ' + escapeHtml(KEYWORD) + '</title>'
+            + '<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0a0a;color:#c1c2c5;padding:1rem}'
+            + '.grid{columns:3 300px;column-gap:12px;max-width:1400px;margin:0 auto}'
+            + 'h1{text-align:center;color:#fefefe;font-size:1.2rem;margin:1rem 0 1.5rem}'
+            + '@media(max-width:700px){.grid{columns:2 240px}}@media(max-width:500px){.grid{columns:1}}</style></head>'
+            + '<body><h1>★ Starred: ' + escapeHtml(KEYWORD) + ' (' + starredItems.length + ')</h1>'
+            + '<div class="grid">' + cards + '</div></body></html>';
+    }
+
+    function downloadBlob(content, filename, type) {
+        const blob = new Blob([content], { type: type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ── Init ─────────────────────────────────────────────
+    init();
+
+    // Hide nav arrows initially
+    document.getElementById('lbPrev').style.display = 'none';
+    document.getElementById('lbNext').style.display = 'none';
+
+})();
+</script>
 </body>
 </html>

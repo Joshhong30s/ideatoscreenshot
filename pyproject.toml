@@ -1,7 +1,7 @@
 [project]
 name = "design-scout"
 version = "0.1.0"
-description = "全自動設計靈感搜集工具 — 輸入關鍵字，輸出 Top 5 設計截圖 + AI 評分"
+description = "競品 Landing Page 研究工具 — 輸入關鍵字，輸出截圖牆 + 手動策展"
 requires-python = ">=3.11"
 dependencies = [
     "click>=8.0",
